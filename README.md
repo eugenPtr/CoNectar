@@ -1,36 +1,19 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CoNectar
 
-## Getting Started
+CoNectar helps people who spend time in men's and women's circles find one another through the resources they offer. Members can publish profiles and resources, browse members, and use People Search to find help through chat.
 
-First, run the development server:
+The app uses Next.js, Supabase, and Vercel. [CONTEXT.md](./CONTEXT.md) defines the inclusive audience and domain language. Invite mechanics and the existing affiliated-community catalog are unchanged.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Run locally
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Use `pnpm install`, start the local Supabase stack with `supabase start`, and pull the development environment with `vercel env pull`. Then run `pnpm dev` and open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Brand and appearance
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The source of truth is [CoNectar Brandbook.pdf](./CoNectar%20Brandbook.pdf). The app uses the device's light or dark appearance by default. Members can choose and save a preference from the appearance icon in the navigation. The desktop navigation contains Chat, Membri, Profil, Admin when applicable, sign out, and appearance; mobile keeps the menu drawer.
 
-## Learn More
+The honey pot mark is [Twemoji](https://github.com/twitter/twemoji) artwork, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). It is used unchanged as `public/honey-pot.svg` so the mark renders consistently across devices.
 
-To learn more about Next.js, take a look at the following resources:
+## Checks
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run `pnpm typecheck`, `pnpm lint`, and `pnpm test`. Tests that use the database require the local Supabase stack.

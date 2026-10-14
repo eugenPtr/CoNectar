@@ -53,7 +53,7 @@ function ComposerFields() {
         disabled={pending || !value.trim()}
         aria-label={pending ? "Se trimite" : "Trimite"}
         aria-busy={pending}
-        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-purple-600 text-white transition hover:bg-purple-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 disabled:bg-zinc-600 disabled:text-zinc-400"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-action text-action-foreground transition hover:bg-action-hover active:brightness-95 disabled:bg-surface-raised disabled:text-secondary"
       >
         {pending ? <SpinnerIcon /> : <ArrowUpIcon />}
       </button>

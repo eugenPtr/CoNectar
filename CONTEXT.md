@@ -1,12 +1,12 @@
-# Barbati la Fain Network
+# CoNectar
 
 A private, invite-only network (≤1000 people) where members publish their Resources and
 projects so others can find the right person to help them. Discovery happens through an
 in-app AI chat that searches over members.
 
-The network is for men who have participated in at least one Man Circle at Camping Fain.
-This is the entry criterion behind every Invite — enforced socially (out of band, by Admins
-deciding who to invite), not by the app.
+The network is for people who spend time in men's or women's circles. Admins decide whom
+to invite out of band; the app does not record or verify circle participation. Existing
+Invite and onboarding mechanics remain the same.
 
 ## Language
 
@@ -15,11 +15,10 @@ A person who has completed onboarding with a valid Invite, published their Profi
 joined the network. Has full access to the Community and People Search.
 _Avoid_: User, account
 
-**Man Circle**:
-A gathering of men at Camping Fain. Participating in at least one is the real-world
-prerequisite for being invited to the network. Lives entirely off-app; the network never
-records or verifies attendance.
-_Avoid_: meeting, group, session
+**Circle**:
+A gathering of people in a men's or women's circle. Circle participation is part of the
+network's real-world context and is not recorded or verified by the app.
+_Avoid_: using Man Circle as the umbrella term; meeting, group, session
 
 **Admin**:
 A member with rights to generate invites. Created directly in the database, not via the app.
@@ -52,7 +51,7 @@ one; existing Members initially belong to Bărbați la Fain.
 _Avoid_: Community, organization, label, tag
 
 **Affiliated Community**:
-An approved men's community to which Members may declare an affiliation. The initial catalog is
+An approved community to which Members may declare an affiliation. The initial catalog is
 ManKind Project, Bărbați în Comuniune, and Bărbați la Fain, and may grow over time.
 _Avoid_: Community, organization, network, label
 
@@ -107,8 +106,8 @@ Published on the profile and searchable alongside Resources.
 _Avoid_: Project, initiative, work item
 
 **Community**:
-The whole body of Fain men in the network — the people, not a page. Used in prose and
-headings (e.g. "the Fain Men Community"). For the page that lists them, see Members.
+The whole body of CoNectar Members — the people, not a page. For the page that lists
+them, see Members.
 _Avoid_: using this word for the listing page
 
 **Donation Prompt**:

@@ -8,7 +8,7 @@ export default function JoinPage() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-6 py-16">
       <Link
         href="/"
-        className="inline-flex items-center gap-1 self-start text-sm text-purple-700 hover:text-purple-900"
+        className="inline-flex items-center gap-1 self-start text-sm text-accent-text hover:opacity-80"
       >
         <svg
           width="18"

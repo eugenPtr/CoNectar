@@ -115,7 +115,7 @@ export function ResourceMaintenanceForm({ initialResources }: { initialResources
           type="button"
           onClick={save}
           disabled={!complete || !dirty || pending}
-          className="mt-3 w-full rounded-lg bg-white px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-3 min-h-11 w-full rounded-[10px] bg-action px-4 py-3 text-sm font-semibold text-action-foreground transition hover:bg-action-hover active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pending ? "Se salvează…" : "Salvează modificările"}
         </button>

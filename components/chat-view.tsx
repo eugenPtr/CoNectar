@@ -118,13 +118,13 @@ export function ChatView({
         {messages.map((message) =>
           message.role === "user" ? (
             <div key={message.id} className="flex justify-end">
-              <div className="max-w-[80%] rounded-2xl bg-purple-600 px-4 py-2 text-sm text-white">
+              <div className="max-w-[80%] rounded-2xl bg-action px-4 py-2 text-sm text-action-foreground">
                 {messageText(message)}
               </div>
             </div>
           ) : (
             <div key={message.id} className="flex justify-start">
-              <div className="prose prose-invert prose-sm max-w-[80%] rounded-2xl bg-zinc-700 px-4 py-2 text-sm text-white">
+              <div className="prose prose-sm max-w-[80%] rounded-2xl border border-border-subtle bg-surface px-4 py-2 text-sm text-foreground">
                 <Streamdown components={markdownComponents}>
                   {messageText(message)}
                 </Streamdown>
@@ -139,7 +139,7 @@ export function ChatView({
         {atCap ? (
           <p className="text-center text-sm text-zinc-300">
             Ai atins limita de {MEMBER_MESSAGE_CAP} mesaje.{" "}
-            <Link href="/" className="text-purple-700 underline">
+            <Link href="/" className="text-accent-text underline">
               Începe o conversație nouă
             </Link>
             .
@@ -169,7 +169,7 @@ export function ChatView({
                 onClick={submit}
                 disabled={busy || !input.trim()}
                 aria-label="Trimite"
-                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-purple-600 text-white transition hover:bg-purple-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300 disabled:bg-zinc-600 disabled:text-zinc-400"
+                className="flex size-11 shrink-0 items-center justify-center rounded-full bg-action text-action-foreground transition hover:bg-action-hover active:brightness-95 disabled:bg-surface-raised disabled:text-secondary"
               >
                 <ArrowUpIcon />
               </button>

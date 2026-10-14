@@ -91,13 +91,12 @@ export function SiteFooter() {
 
           <div className="mt-6 space-y-4 text-[0.95rem] leading-7 text-zinc-300">
             <p>
-              Salut, am creat acest tool în urma participării la tabăra de bărbați de la Camping
-              Fain, unde am simțit că sunt înconjurat de oameni integri, cu valori similare cu ale
-              mele — tipul de oameni cu care doresc să colaborez în proiecte și cu care sunt deschis
-              să clădesc relații.
+              CoNectar a pornit după experiența mea în tabăra de bărbați de la Camping Fain,
+              unde am întâlnit oameni cu care mi-am dorit să colaborez și să clădesc relații.
+              Acum, locul acesta îi aduce împreună pe oamenii din cercuri de bărbați și de femei.
             </p>
             <p>
-              Viziunea mea este ca acest tool să ne ajute pe toți să găsim resursele și oamenii
+              Viziunea mea este ca CoNectar să ne ajute să găsim resursele și oamenii
               potriviți pentru orice ne dorim să realizăm.
             </p>
             <p>

@@ -57,7 +57,7 @@ export function ProfileView({
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <h1 className="text-2xl font-semibold">{profile.name}</h1>
         {isOwn && (
-          <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+          <span className="rounded-full bg-sage px-2 py-0.5 text-xs font-medium text-[#292b25]">
             Tu
           </span>
         )}

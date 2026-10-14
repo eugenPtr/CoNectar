@@ -3,6 +3,12 @@
 Lightweight, reversible product and design decisions that should remain visible but do not warrant
 an Architecture Decision Record.
 
+## 2026-10-14 — CoNectar appearance and navigation
+
+**Status:** Current
+
+The CoNectar Brandbook defines the app's light and dark colors, system sans typography, and button states. The device appearance is the default; a member's saved choice can override it. The appearance icon follows sign out in the desktop navbar. Desktop navigation shows Chat, Membri, Profil, and Admin for admins, with the 🍯 CoNectar mark on the left. Mobile retains the drawer and offers the same appearance choice. The audience language includes people in men's and women's circles. Invite mechanics and the existing affiliated-community catalog remain unchanged.
+
 ## 2026-08-11 — Community Affiliations do not influence People Search
 
 **Status:** Current

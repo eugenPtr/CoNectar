@@ -24,6 +24,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("sonner", () => ({
   toast: { success: mocks.toastSuccess, error: mocks.toastError },
 }));
+vi.mock("@/components/theme-toggle", () => ({ ThemeToggle: () => <button type="button" aria-label="Aspect">Aspect</button> }));
 
 const conversations = [
   { id: "active", title: "Casa naturală", lastMessageAt: "2026-08-10" },
@@ -48,7 +49,8 @@ describe("AuthedMenu mobile drawer", () => {
     expect(screen.getAllByRole("link", { name: "Membri" })).not.toHaveLength(0);
     expect(screen.getByRole("link", { name: "Conversație nouă" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Casa naturală" })).toHaveAttribute("href", "/chat/active");
-    expect(screen.getAllByRole("button", { name: "Sign out" })).not.toHaveLength(0);
+    expect(screen.getAllByRole("button", { name: "Deconectare" })).not.toHaveLength(0);
+    expect(screen.getAllByRole("link", { name: "Chat" })).not.toHaveLength(0);
   });
 
   it("deletes an active Conversation immediately from its overflow menu", async () => {

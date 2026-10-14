@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ConversationSidebar } from "@/components/conversation-sidebar";
 import { HomeComposer } from "@/components/home-composer";
 import { supabaseConversationsClient } from "@/lib/people-search/conversations";
@@ -10,22 +11,23 @@ export default async function Home() {
   if (!userData.user) {
     return (
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
-        <h1 className="text-2xl font-semibold">
-          Bun venit, barbate! 
+        <Image src="/honey-pot.svg" alt="CoNectar" width={48} height={48} />
+        <h1 className="text-[40px] leading-[48px] font-semibold tracking-tight">
+          Bun venit la CoNectar
         </h1>
-        <p className="text-sm">
-          Aici găsești toate resursele comunitatii. Vezi cine iti poate aduce valoare in proiectele la care lucrezi
+        <p className="text-base text-secondary">
+          Un loc pentru oamenii din cercuri de bărbați și de femei. Descoperă resursele comunității și găsește persoanele potrivite pentru proiectele tale.
         </p>
         <div className="flex flex-col items-center gap-3">
           <Link
             href="/sign-in"
-            className="rounded bg-purple-600 px-10 py-2  text-white hover:bg-purple-700 "
+            className="inline-flex min-h-11 items-center justify-center rounded-[10px] bg-action px-10 font-semibold text-action-foreground hover:bg-action-hover active:brightness-95 disabled:opacity-50"
           >
             Intră
           </Link>
           <Link
             href="/join"
-            className="text-sm text-purple-700 underline hover:text-purple-900"
+            className="text-sm font-medium text-accent-text underline underline-offset-4 hover:opacity-80"
           >
             Încă nu am cont
           </Link>
@@ -62,11 +64,11 @@ export default async function Home() {
 
   const welcome = (
     <>
-      <h1 className="text-2xl font-semibold md:text-5xl md:tracking-tight">
-        Salut, barbate!
+      <h1 className="text-[40px] leading-[48px] font-semibold tracking-tight">
+        Salut!
       </h1>
-      <p className="text-sm md:text-xl">
-        Aici găsești toate resursele comunitatii
+      <p className="text-base text-secondary md:text-xl md:leading-7">
+        Găsește oameni și resurse în comunitate.
       </p>
     </>
   );

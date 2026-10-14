@@ -38,7 +38,7 @@ export function AdminInviteTable({ invites }: { invites: InviteListRow[] }) {
         type="button"
         onClick={generate}
         disabled={pending}
-        className="rounded bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
+        className="min-h-11 rounded-[10px] bg-action px-4 py-2 text-sm font-semibold text-action-foreground hover:bg-action-hover active:brightness-95 disabled:opacity-50"
       >
         {pending ? "Se generează…" : "Generează link de invitație"}
       </button>

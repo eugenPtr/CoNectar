@@ -43,7 +43,7 @@ function phonePlaceholder(country?: Country) {
 
 const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const primaryButtonClass =
-  "rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-purple-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed disabled:opacity-40";
+  "min-h-11 rounded-[10px] bg-action px-4 py-2.5 text-sm font-semibold text-action-foreground transition-colors hover:bg-action-hover active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40";
 
 export default function OnboardingForm({
   invite,
@@ -509,8 +509,8 @@ export default function OnboardingForm({
                     }}
                     className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                       values.heartProject === choice
-                        ? "border-white bg-white text-zinc-950"
-                        : "border-zinc-700 bg-zinc-950 text-white hover:border-zinc-500"
+                        ? "border-action bg-action text-action-foreground"
+                        : "border-border-control bg-surface text-foreground hover:bg-surface-raised"
                     }`}
                   >
                     {choice ? "Da" : "Încă nu"}
@@ -578,7 +578,7 @@ export default function OnboardingForm({
                 }}
                 countrySelectProps={{
                   className:
-                    "rounded border border-zinc-600 bg-white px-2 outline-none focus:ring-2 focus:ring-zinc-200",
+                    "rounded border border-border-control bg-surface px-2 text-foreground outline-none focus:ring-2 focus:ring-focus-ring",
                 }}
               />
             </div>

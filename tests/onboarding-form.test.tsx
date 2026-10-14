@@ -56,14 +56,14 @@ describe("OnboardingForm", () => {
     expect(screen.getByRole("heading", { name: "Intră în rețea" })).toBeInTheDocument();
     expect(screen.getByText("Spune-ne despre tine, ca membrii să te poată găsi.")).toBeInTheDocument();
     expect(screen.queryByText("Pasul 1/4")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Începe" })).toHaveClass("bg-purple-600");
+    expect(screen.getByRole("button", { name: "Începe" })).toHaveClass("bg-action");
     await user.click(screen.getByRole("button", { name: "Începe" }));
     expect(screen.queryByRole("heading", { name: "Intră în rețea" })).not.toBeInTheDocument();
     expect(screen.getByText("Pasul 1/4")).toBeInTheDocument();
     expect(screen.getAllByTestId("progress-segment")).toHaveLength(4);
     expect(screen.getByLabelText("Localitate (obligatoriu)")).not.toHaveAttribute("placeholder");
     expect(screen.getByRole("button", { name: "Înainte" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Înainte" })).toHaveClass("bg-purple-600");
+    expect(screen.getByRole("button", { name: "Înainte" })).toHaveClass("bg-action");
     await reachResources(user);
     expect(screen.getByRole("heading", { name: "Ce resurse poți oferi comunității?" })).toBeInTheDocument();
     expect(screen.getByText("Adaugă fiecare resursă separat.")).toBeInTheDocument();

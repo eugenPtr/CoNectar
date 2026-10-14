@@ -83,7 +83,7 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
         <label className="flex flex-col gap-1.5 text-sm">Email de contact<input type="email" value={values.contactEmail} onChange={(e) => update("contactEmail", e.target.value)} aria-invalid={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail)} className={fieldClass(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail))} /></label>
         {(["website", "linkedin", "facebook", "instagram", "x"] as const).map((key) => <label key={key} className="flex flex-col gap-1.5 text-sm">{key}<input value={values[key]} onChange={(e) => update(key, e.target.value)} className={fieldClass(false)} /></label>)}
       </section>
-      <button type="button" onClick={save} disabled={!valid || !dirty || pending} className="sticky bottom-4 w-full rounded-lg bg-purple-600 px-4 py-3 font-semibold disabled:opacity-40">{pending ? "Se salvează…" : "Salvează profilul"}</button>
+      <button type="button" onClick={save} disabled={!valid || !dirty || pending} className="sticky bottom-4 min-h-11 w-full rounded-[10px] bg-action px-4 py-3 font-semibold text-action-foreground hover:bg-action-hover active:brightness-95 disabled:opacity-40">{pending ? "Se salvează…" : "Salvează profilul"}</button>
     </form>
   </main>;
 }
