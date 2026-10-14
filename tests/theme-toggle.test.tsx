@@ -13,22 +13,29 @@ describe("appearance choice", () => {
     window.localStorage.clear();
     document.documentElement.removeAttribute("data-theme");
   });
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
 
-  it("defaults to the device and saves or clears an explicit choice", async () => {
+  it.each([
+    [false, "Întunecat", "dark"],
+    [true, "Luminos", "light"],
+  ])("switches directly from the device theme to %s's opposite", async (deviceIsDark, label, nextTheme) => {
+    vi.stubGlobal("matchMedia", vi.fn().mockReturnValue({
+      matches: deviceIsDark,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
     const user = userEvent.setup();
     render(<ThemeProvider><ThemeToggle /></ThemeProvider>);
 
-    await user.click(screen.getByRole("button", { name: /Aspect: alege/ }));
-    expect(screen.getByRole("menuitemradio", { name: "Dispozitiv" })).toHaveAttribute("aria-checked", "true");
-
-    await user.click(screen.getByRole("menuitemradio", { name: "Întunecat" }));
-    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
-    expect(window.localStorage.getItem("conectar-theme")).toBe("dark");
-
-    await user.click(screen.getByRole("button", { name: /Aspect: alege/ }));
-    await user.click(screen.getByRole("menuitemradio", { name: "Dispozitiv" }));
-    expect(document.documentElement).not.toHaveAttribute("data-theme");
-    expect(window.localStorage.getItem("conectar-theme")).toBeNull();
+    const toggle = screen.getByRole("button", { name: `Activează modul ${label.toLowerCase()}` });
+    await user.click(toggle);
+    expect(document.documentElement).toHaveAttribute("data-theme", nextTheme);
+    expect(window.localStorage.getItem("conectar-theme")).toBe(nextTheme);
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: `Activează modul ${deviceIsDark ? "întunecat" : "luminos"}` }));
+    expect(document.documentElement).toHaveAttribute("data-theme", deviceIsDark ? "dark" : "light");
   });
 });

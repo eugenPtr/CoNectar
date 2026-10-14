@@ -51,8 +51,8 @@ one; existing Members initially belong to Bărbați la Fain.
 _Avoid_: Community, organization, label, tag
 
 **Affiliated Community**:
-An approved community to which Members may declare an affiliation. The initial catalog is
-ManKind Project, Bărbați în Comuniune, and Bărbați la Fain, and may grow over time.
+An approved community to which Members may declare an affiliation. The current catalog is
+ManKind Project, Bărbați în Comuniune, Bărbați la Fain, and Femei in Cercul Lunii.
 _Avoid_: Community, organization, network, label
 
 **Contact Details**:

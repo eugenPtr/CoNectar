@@ -1,64 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "@/components/theme-provider";
 
-const choices = [
-  { value: "system", label: "Dispozitiv" },
-  { value: "light", label: "Luminos" },
-  { value: "dark", label: "Întunecat" },
-] as const;
+const darkModeQuery = "(prefers-color-scheme: dark)";
+
+function subscribeToDeviceTheme(listener: () => void) {
+  const media = window.matchMedia(darkModeQuery);
+  media.addEventListener("change", listener);
+  return () => media.removeEventListener("change", listener);
+}
+
+function deviceUsesDarkTheme() {
+  return window.matchMedia(darkModeQuery).matches;
+}
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function close(event: PointerEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
-    }
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", close);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+  const deviceIsDark = useSyncExternalStore(subscribeToDeviceTheme, deviceUsesDarkTheme, () => false);
+  const isDark = theme === "dark" || (theme === "system" && deviceIsDark);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        aria-label="Aspect: alege modul luminos sau întunecat"
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen((value) => !value)}
-        className="flex size-11 items-center justify-center rounded-[10px] text-foreground hover:bg-surface-raised"
-      >
-        {theme === "dark" ? <MoonIcon /> : <SunIcon />}
-      </button>
-      {open && (
-        <div role="menu" aria-label="Aspect" className="absolute bottom-full right-0 z-50 mb-2 w-40 rounded-xl border border-border-subtle bg-surface p-1 shadow-lg md:bottom-auto md:top-full md:mb-0 md:mt-2">
-          {choices.map((choice) => (
-            <button
-              key={choice.value}
-              type="button"
-              role="menuitemradio"
-              aria-checked={theme === choice.value}
-              onClick={() => { setTheme(choice.value); setOpen(false); }}
-              className="flex min-h-11 w-full items-center justify-between rounded-[10px] px-3 text-left text-sm text-foreground hover:bg-surface-raised"
-            >
-              {choice.label}<span aria-hidden="true">{theme === choice.value ? "✓" : ""}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      aria-label={isDark ? "Activează modul luminos" : "Activează modul întunecat"}
+      title={isDark ? "Mod luminos" : "Mod întunecat"}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="flex size-11 items-center justify-center rounded-[10px] text-foreground hover:bg-surface-raised"
+    >
+      {isDark ? <SunIcon /> : <MoonIcon />}
+    </button>
   );
 }
 
