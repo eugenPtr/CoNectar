@@ -8,7 +8,7 @@ export function HomeComposer() {
   return (
     <form
       action={startConversation}
-      className="flex min-h-[3.625rem] w-full items-end gap-2 rounded-[1.75rem] border border-zinc-600 bg-zinc-800 p-2 pl-4 shadow-lg shadow-black/20 md:min-h-24 md:p-3 md:pl-5"
+      className="flex min-h-[3.625rem] w-full items-end gap-2 rounded-[1.75rem] border border-zinc-600 bg-zinc-800 p-2 pl-4 shadow-lg shadow-black/20 focus-within:border-focus-ring md:min-h-24 md:p-3 md:pl-5"
     >
       <ComposerFields />
     </form>
@@ -46,7 +46,8 @@ function ComposerFields() {
           }
         }}
         placeholder="Am nevoie de ..."
-        className="h-10 max-h-24 min-h-10 flex-1 resize-none bg-transparent py-2 text-left text-sm leading-6 text-white outline-none placeholder:text-zinc-400 md:self-start md:text-base"
+        style={{ outline: "none" }}
+        className="h-10 max-h-24 min-h-10 flex-1 resize-none bg-transparent py-2 text-left text-sm leading-6 text-white placeholder:text-zinc-400 md:self-start md:text-base"
       />
       <button
         type="submit"

@@ -25,7 +25,7 @@ const markdownComponents: MarkdownComponents = {
       return (
         <a
           href={href}
-          className="font-medium text-white underline hover:text-zinc-300"
+          className={`font-medium underline hover:opacity-80 ${href?.startsWith("/profile/") ? "text-accent-text" : "text-foreground"}`}
         >
           {children}
         </a>
@@ -66,6 +66,9 @@ export function ChatView({
   const memberMessages = messages.filter((m) => m.role === "user").length;
   const atCap = memberMessages >= MEMBER_MESSAGE_CAP;
   const busy = status === "submitted" || status === "streaming";
+  const lastMessage = messages.at(-1);
+  const waitingForReply = busy && (!lastMessage || lastMessage.role === "user" ||
+    (lastMessage.role === "assistant" && !messageText(lastMessage).trim()));
   const wasBusy = useRef(false);
 
   useEffect(() => {
@@ -91,7 +94,7 @@ export function ChatView({
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, waitingForReply]);
 
   useEffect(() => {
     if (error) toast.error("Ceva n-a mers. Încearcă din nou.");
@@ -122,7 +125,7 @@ export function ChatView({
                 {messageText(message)}
               </div>
             </div>
-          ) : (
+          ) : messageText(message) ? (
             <div key={message.id} className="flex justify-start">
               <div className="prose prose-sm max-w-[80%] rounded-2xl border border-border-subtle bg-surface px-4 py-2 text-sm text-foreground">
                 <Streamdown components={markdownComponents}>
@@ -130,7 +133,23 @@ export function ChatView({
                 </Streamdown>
               </div>
             </div>
-          ),
+          ) : null,
+        )}
+        {waitingForReply && (
+          <div className="flex justify-start" role="status" aria-live="polite">
+            <div className="flex items-center gap-3 rounded-2xl border border-border-subtle bg-surface px-4 py-3 text-sm text-secondary">
+              <span>Pregătesc răspunsul</span>
+              <span className="flex items-center gap-1" aria-hidden="true">
+                {[0, 1, 2].map((dot) => (
+                  <span
+                    key={dot}
+                    className="size-1.5 animate-bounce rounded-full bg-accent-text motion-reduce:animate-none"
+                    style={{ animationDelay: `${dot * 150}ms` }}
+                  />
+                ))}
+              </span>
+            </div>
+          </div>
         )}
         <div ref={endRef} />
       </div>
@@ -146,7 +165,7 @@ export function ChatView({
           </p>
         ) : (
           <>
-            <div className="flex w-full items-end gap-2 rounded-[1.75rem] border border-zinc-600 bg-zinc-800 p-2 pl-4 shadow-lg shadow-black/20">
+            <div className="flex w-full items-end gap-2 rounded-[1.75rem] border border-zinc-600 bg-zinc-800 p-2 pl-4 shadow-lg shadow-black/20 focus-within:border-focus-ring">
               <textarea
                 ref={textareaRef}
                 rows={1}
@@ -162,7 +181,8 @@ export function ChatView({
                   }
                 }}
                 placeholder="Am nevoie de ..."
-                className="max-h-24 min-h-10 flex-1 resize-none bg-transparent py-2 text-sm leading-6 text-white outline-none placeholder:text-zinc-400"
+                style={{ outline: "none" }}
+                className="max-h-24 min-h-10 flex-1 resize-none bg-transparent py-2 text-sm leading-6 text-white placeholder:text-zinc-400"
               />
               <button
                 type="button"

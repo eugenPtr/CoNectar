@@ -55,12 +55,12 @@ export function ProfileView({
         <ProfileAvatar name={profile.name} photoUrl={profile.photoUrl} size="lg" />
         <div className="min-w-0">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h1 className="text-2xl font-semibold">{profile.name}</h1>
-        {isOwn && (
-          <span className="rounded-full bg-sage px-2 py-0.5 text-xs font-medium text-[#292b25]">
-            Tu
-          </span>
-        )}
+              <h1 className="text-2xl font-semibold text-accent-text">{profile.name}</h1>
+              {isOwn && (
+                <span className="rounded-full bg-sage px-2 py-0.5 text-xs font-medium text-[#292b25]">
+                  Tu
+                </span>
+              )}
           </div>
           <p className="mt-1 text-sm text-zinc-300">{profile.location}</p>
           <div className="mt-2 flex flex-wrap gap-2">

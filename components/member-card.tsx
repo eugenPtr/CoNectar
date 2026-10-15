@@ -17,7 +17,7 @@ export function MemberCard({ member, isOwn }: { member: MemberCardData; isOwn: b
       >
         <div className="flex items-center gap-3">
           <ProfileAvatar name={member.name} photoUrl={member.photoUrl} size="sm" />
-          <h2 className="font-semibold text-white">{member.name}</h2>
+          <h2 className="font-semibold text-accent-text">{member.name}</h2>
         </div>
         <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-purple-300">
           Resurse
