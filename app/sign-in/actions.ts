@@ -2,7 +2,8 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { validateInvite } from "@/lib/invites/validate";
+import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
+import { universalInviteConfig } from "@/lib/invites/universal";
 import {
   createSupabaseServerClient,
   createSupabaseServiceClient,
@@ -37,17 +38,7 @@ export async function sendMagicLink(formData: FormData) {
     }
 
     const validation = await validateInvite(
-      {
-        findInvite: async (code) => {
-          const { data } = await service
-            .from("invites")
-            .select("claimed_by")
-            .eq("code", code)
-            .maybeSingle();
-          return data === null ? null : { claimedBy: data.claimed_by };
-        },
-      },
-      invite,
+      supabaseInviteValidateClient(service), invite, universalInviteConfig(),
     );
 
     if (validation.kind !== "valid") {

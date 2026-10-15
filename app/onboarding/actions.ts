@@ -6,6 +6,8 @@ import { OnboardingInfrastructureError, submitOnboarding } from "@/lib/onboardin
 import { gatewayEmbedder } from "@/lib/people-search/ai-gateway";
 import { parseResourceLines } from "@/lib/resources/model";
 import { validateProfilePhoto } from "@/lib/profile/photo";
+import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
+import { isUniversalInviteCode, universalInviteConfig } from "@/lib/invites/universal";
 
 export type SubmitOnboardingActionResult =
   | { kind: "ok" }
@@ -34,10 +36,16 @@ export async function submitOnboardingAction(
 
   const code = String(formData.get("invite") ?? "").trim();
   const service = await createSupabaseServiceClient();
+  const config = universalInviteConfig();
+  const isUniversal = isUniversalInviteCode(code, config);
   const photo = formData.get("profile_photo");
   let profilePhotoPath: string | undefined;
 
   try {
+    const validation = await validateInvite(supabaseInviteValidateClient(service), code, config);
+    if (validation.kind === "already-claimed") return { kind: "alreadyClaimed" };
+    if (validation.kind !== "valid") return { kind: "invalidCode" };
+
     if (photo instanceof File && photo.size > 0) {
       const valid = await validateProfilePhoto(photo);
       if (!valid) return { kind: "invalidPhoto" };
@@ -59,6 +67,7 @@ export async function submitOnboardingAction(
               p_user_id: payload.userId,
               p_email: payload.email,
               p_code: payload.code,
+              p_is_universal: isUniversal,
               p_profile: {
                 first_name: payload.firstName,
                 last_name: payload.lastName,

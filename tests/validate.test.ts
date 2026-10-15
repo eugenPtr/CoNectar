@@ -46,4 +46,19 @@ describe("validateInvite (S1 read-only integration seam)", () => {
 
     expect(result).toEqual({ kind: "already-claimed" });
   });
+
+  it("accepts a configured universal code without an invite row", async () => {
+    const client = pgliteValidateAdapter(db);
+    const config = { code: "UNIV-EXAMPLE", enabled: true };
+    expect(await validateInvite(client, config.code, config)).toEqual({ kind: "valid" });
+    expect(await validateInvite(client, config.code, { ...config, enabled: false }))
+      .toEqual({ kind: "invalid" });
+  });
+
+  it("rejects a universal code that collides with an ordinary invite", async () => {
+    await seedUnclaimedInvite(db, { code: "UNIV-EXAMPLE", email: "collision@example.com" });
+    expect(await validateInvite(pgliteValidateAdapter(db), "UNIV-EXAMPLE", {
+      code: "UNIV-EXAMPLE", enabled: true,
+    })).toEqual({ kind: "configuration-error" });
+  });
 });

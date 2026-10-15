@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
+import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
+import { universalInviteConfig } from "@/lib/invites/universal";
 import OnboardingForm from "./form";
 
 type SearchParams = Promise<{ invite?: string }>;
@@ -35,6 +37,19 @@ export default async function OnboardingPage({
         <p className="text-sm text-zinc-300">
           Pornește din linkul tău de invitație ca să intri în rețea.
         </p>
+      </main>
+    );
+  }
+
+  const service = createSupabaseServiceClient();
+  const validation = await validateInvite(
+    supabaseInviteValidateClient(service), invite, universalInviteConfig(),
+  );
+  if (validation.kind !== "valid") {
+    return (
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-6 py-16">
+        <h1 className="text-2xl font-semibold">Cod de invitație indisponibil</h1>
+        <p className="text-sm text-zinc-300">Contactează persoana care te-a invitat.</p>
       </main>
     );
   }

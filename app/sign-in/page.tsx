@@ -1,4 +1,5 @@
-import { validateInvite } from "@/lib/invites/validate";
+import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
+import { universalInviteConfig } from "@/lib/invites/universal";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { sendMagicLink } from "./actions";
 import { SubmitButton } from "./submit-button";
@@ -20,18 +21,17 @@ export default async function SignInPage({
   if (invite) {
     const service = await createSupabaseServiceClient();
     const result = await validateInvite(
-      {
-        findInvite: async (code) => {
-          const { data } = await service
-            .from("invites")
-            .select("claimed_by")
-            .eq("code", code)
-            .maybeSingle();
-          return data === null ? null : { claimedBy: data.claimed_by };
-        },
-      },
-      invite,
+      supabaseInviteValidateClient(service), invite, universalInviteConfig(),
     );
+
+    if (result.kind === "configuration-error") {
+      return (
+        <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-6 py-16">
+          <h1 className="text-2xl font-semibold">Cod de invitație indisponibil</h1>
+          <p className="text-sm text-zinc-300">Contactează administratorul rețelei.</p>
+        </main>
+      );
+    }
 
     if (result.kind === "invalid") {
       return (
