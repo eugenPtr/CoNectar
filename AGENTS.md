@@ -11,12 +11,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Tooling
 
-Stack is Supabase + Vercel (ADR-0003). Every change to these must go through their CLI so it is reproducible, reviewable, and in git. **No manual dashboard changes** — the dashboard is read-only for inspection.
+Stack is Supabase + Vercel (ADR-0003). Infrastructure and schema changes must go through their CLI so they are reproducible, reviewable, and in git. **No manual dashboard changes** — the dashboard is read-only for inspection.
 
 ## Supabase
 
-- Use the Supabase CLI for everything: `supabase start` for the local stack, migrations in `supabase/migrations/`, `supabase functions deploy` for Edge Functions, `supabase gen types` for generated types.
+- Use the Supabase CLI for schema and platform changes: `supabase start` for the local stack, migrations in `supabase/migrations/`, `supabase functions deploy` for Edge Functions, `supabase gen types` for generated types.
 - Schema, RLS policies, triggers, and DB webhooks are defined as migrations — never hand-edited in the dashboard.
+- For data-only inserts into existing tables, insert directly into the intended database when possible; do not create a migration solely for the insert. Use the Supabase CLI if it supports the operation, otherwise use a service-role client. Check for an existing row first and verify the inserted row afterward.
 - Tests run against the local stack (`supabase start`), not a remote project.
 
 ## Vercel
