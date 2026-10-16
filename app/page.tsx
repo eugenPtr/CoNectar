@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { BrandLockup } from "@/components/brand-lockup";
 import { ConversationSidebar } from "@/components/conversation-sidebar";
 import { HomeComposer } from "@/components/home-composer";
 import { supabaseConversationsClient } from "@/lib/people-search/conversations";
@@ -10,13 +10,11 @@ export default async function Home() {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) {
     return (
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
-        <Image src="/honey-pot.svg" alt="CoNectar" width={48} height={48} />
-        <h1 className="text-[40px] leading-[48px] font-semibold tracking-tight">
-          Bun venit la CoNectar
-        </h1>
-        <p className="text-base text-secondary">
-          Un loc pentru oamenii din cercuri de bărbați și de femei. Descoperă resursele comunității și găsește persoanele potrivite pentru proiectele tale.
+      <main className="flex w-full flex-1 flex-col items-center justify-center gap-10 bg-brand-green px-6 py-16 text-center text-brand-cream">
+        <h1 className="sr-only">CoNectar</h1>
+        <BrandLockup hero tagline />
+        <p className="max-w-xl text-base text-brand-muted md:text-lg">
+          Un loc pentru oamenii in calatoria de a trai constient. Descoperă resursele comunității și găsește persoanele potrivite pentru proiectele tale.
         </p>
         <div className="flex flex-col items-center gap-3">
           <Link
@@ -27,7 +25,7 @@ export default async function Home() {
           </Link>
           <Link
             href="/join"
-            className="text-sm font-medium text-accent-text underline underline-offset-4 hover:opacity-80"
+            className="text-sm font-medium text-brand-cream underline underline-offset-4 hover:text-brand-gold"
           >
             Încă nu am cont
           </Link>

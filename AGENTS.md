@@ -32,6 +32,7 @@ Stack is Supabase + Vercel (ADR-0003). Infrastructure and schema changes must go
 # UI verification
 
 - Any change that affects the rendered UI or user interactions must be tested manually in a browser before handoff. Exercise the affected flow at desktop and mobile viewport sizes, verify relevant interactive and validation states, and report what was checked.
+- If the in-app browser session is unavailable, use a local browser automation tool such as `agent-browser` or Playwright for that verification. Do not stop at a browser connection error when a local browser can run.
 
 # Navigation
 

@@ -1,6 +1,7 @@
 import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
 import { universalInviteConfig } from "@/lib/invites/universal";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
+import { BrandLockup } from "@/components/brand-lockup";
 import { sendMagicLink } from "./actions";
 import { SubmitButton } from "./submit-button";
 
@@ -74,6 +75,9 @@ export default async function SignInPage({
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-6 py-16">
+      <div className="sign-in-brand rounded-2xl bg-brand-green px-3 py-6 text-center">
+        <BrandLockup hero tagline />
+      </div>
       <div>
         <h1 className="text-2xl font-semibold">{invite ? "Ești invitat" : "Autentificare"}</h1>
         <p className="mt-2 text-sm text-zinc-300">

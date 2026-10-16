@@ -7,7 +7,7 @@ an Architecture Decision Record.
 
 **Status:** Current
 
-The CoNectar Brandbook defines the app's light and dark colors, system sans typography, and button states. The device appearance is the default; the appearance icon switches directly to the other mode and saves that choice. The icon follows sign out in the desktop navbar. Desktop navigation shows Chat, Membri, Profil, and Admin for admins, with the 🍯 CoNectar mark on the left. Mobile retains the drawer and offers the same toggle. The audience language includes people in men's and women's circles. Invite mechanics remain unchanged; the affiliated-community catalog can grow through data additions.
+The newer CoNectar logo reference supersedes the Brandbook's honey-jar mark and one-color wordmark. The honeycomb-and-heart mark and serif CoNectar wordmark use warm white for “Co” and gold for “Nectar” on forest green. The signed-out home screen places the mark beside the wordmark, with “CONEXIUNE · COMUNITATE · CREȘTERE” below the name. The light navbar uses forest green, while dark surfaces use deeper green shades. The device appearance is the default; the appearance icon switches directly to the other mode and saves that choice. The icon follows sign out in the desktop navbar. Desktop navigation shows Chat, Membri, Profil, and Admin for admins. Mobile retains the drawer and offers the same toggle. The audience language includes people in men's and women's circles. Invite mechanics remain unchanged; the affiliated-community catalog can grow through data additions.
 
 ## 2026-08-11 — Community Affiliations do not influence People Search
 

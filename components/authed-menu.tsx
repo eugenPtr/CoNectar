@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { signOutAction } from "@/app/auth/sign-out";
 import { deleteConversationAction } from "@/app/chat/actions";
 import type { ConversationSummary } from "@/lib/people-search/conversations";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandLockup } from "@/components/brand-lockup";
 
 // Shared member navigation. Desktop uses a horizontal navbar; mobile keeps the
 // conversation drawer. The root layout renders it only for onboarded members.
@@ -57,38 +57,35 @@ export function AuthedMenu({
 
   const menuLinks = (
     <>
-      <Link href="/" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised">Chat</Link>
-      <Link href="/members" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised">Membri</Link>
-      <Link href="/profile" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised">Profil</Link>
-      {isAdmin && <Link href="/admin/dashboard" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-foreground hover:bg-surface-raised">Admin</Link>}
+      <Link href="/" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Chat</Link>
+      <Link href="/members" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Membri</Link>
+      <Link href="/profile" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Profil</Link>
+      {isAdmin && <Link href="/admin/dashboard" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Admin</Link>}
     </>
   );
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border-subtle bg-surface px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-nav-border bg-nav-surface px-4 md:px-6">
       <div className="flex items-center gap-2">
         <button
           type="button"
           aria-label="Deschide meniul"
           aria-expanded={open}
           onClick={() => setOpen(true)}
-          className="flex size-11 items-center justify-center rounded-[10px] text-foreground hover:bg-surface-raised md:hidden"
+          className="flex size-11 items-center justify-center rounded-[10px] text-nav-foreground hover:bg-nav-hover md:hidden"
         >
           <MenuIcon />
         </button>
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
-          <Image src="/honey-pot.svg" alt="Borcan cu miere" width={28} height={28} />
-          CoNectar
-        </Link>
+        <Link href="/" aria-label="CoNectar — acasă"><BrandLockup /></Link>
       </div>
 
       <nav aria-label="Navigare principală" className="hidden items-center gap-1 md:flex">
-        <Link href="/" aria-current={pathname === "/" || pathname.startsWith("/chat/") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-raised aria-[current=page]:bg-sage aria-[current=page]:text-[#292b25]">Chat</Link>
-        <Link href="/members" aria-current={pathname.startsWith("/members") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-raised aria-[current=page]:bg-sage aria-[current=page]:text-[#292b25]">Membri</Link>
-        <Link href="/profile" aria-current={pathname === "/profile" ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-raised aria-[current=page]:bg-sage aria-[current=page]:text-[#292b25]">Profil</Link>
-        {isAdmin && <Link href="/admin/dashboard" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-raised aria-[current=page]:bg-sage aria-[current=page]:text-[#292b25]">Admin</Link>}
+        <Link href="/" aria-current={pathname === "/" || pathname.startsWith("/chat/") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Chat</Link>
+        <Link href="/members" aria-current={pathname.startsWith("/members") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Membri</Link>
+        <Link href="/profile" aria-current={pathname === "/profile" ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Profil</Link>
+        {isAdmin && <Link href="/admin/dashboard" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Admin</Link>}
         <form action={signOutAction}>
-          <button type="submit" aria-label="Deconectare" title="Deconectare" className="flex size-11 items-center justify-center rounded-[10px] text-foreground hover:bg-surface-raised"><SignOutIcon /></button>
+          <button type="submit" aria-label="Deconectare" title="Deconectare" className="flex size-11 items-center justify-center rounded-[10px] text-nav-foreground hover:bg-nav-hover"><SignOutIcon /></button>
         </form>
         <ThemeToggle />
       </nav>
@@ -96,33 +93,33 @@ export function AuthedMenu({
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
           <button type="button" aria-label="Închide meniul" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/60" />
-          <aside className="mobile-menu-drawer absolute inset-y-0 left-0 flex w-[85vw] max-w-90 flex-col border-r border-border-subtle bg-surface shadow-2xl">
-            <div className="flex h-16 items-center justify-between border-b border-border-subtle px-4">
-              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 text-lg font-semibold text-foreground"><Image src="/honey-pot.svg" alt="Borcan cu miere" width={28} height={28} />CoNectar</Link>
-              <button type="button" aria-label="Închide meniul" onClick={() => setOpen(false)} className="flex size-11 items-center justify-center rounded-[10px] text-foreground hover:bg-surface-raised"><CloseIcon /></button>
+          <aside className="mobile-menu-drawer absolute inset-y-0 left-0 flex w-[85vw] max-w-90 flex-col border-r border-nav-border bg-nav-surface shadow-2xl">
+            <div className="flex h-16 items-center justify-between border-b border-nav-border px-4">
+              <Link href="/" aria-label="CoNectar — acasă" onClick={() => setOpen(false)}><BrandLockup /></Link>
+              <button type="button" aria-label="Închide meniul" onClick={() => setOpen(false)} className="flex size-11 items-center justify-center rounded-[10px] text-nav-foreground hover:bg-nav-hover"><CloseIcon /></button>
             </div>
             <nav className="px-3 py-3">{menuLinks}</nav>
-            <div className="mx-3 border-t border-zinc-800 pt-3">
-              <Link href="/" onClick={() => setOpen(false)} className="block w-full rounded-xl border border-zinc-700 px-3 py-2.5 text-center text-sm font-medium text-zinc-200 hover:bg-zinc-800">Conversație nouă</Link>
+            <div className="mx-3 border-t border-nav-border pt-3">
+              <Link href="/" onClick={() => setOpen(false)} className="block w-full rounded-xl border border-nav-border px-3 py-2.5 text-center text-sm font-medium text-nav-foreground hover:bg-nav-hover">Conversație nouă</Link>
             </div>
             <section className="mt-5 min-h-0 flex-1 overflow-y-auto px-3" aria-labelledby="recent-conversations">
-              <h2 id="recent-conversations" className="px-2 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">Recente</h2>
+              <h2 id="recent-conversations" className="px-2 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-nav-muted">Recente</h2>
               <div className="space-y-1">
                 {conversations.map((conversation) => (
-                  <div key={conversation.id} className={`relative flex items-center rounded-xl text-sm ${conversation.id === activeId ? "bg-zinc-800 text-white" : "text-zinc-200 hover:bg-zinc-900"}`}>
+                  <div key={conversation.id} className={`relative flex items-center rounded-xl text-sm ${conversation.id === activeId ? "bg-nav-active text-nav-foreground" : "text-nav-foreground hover:bg-nav-hover"}`}>
                     <Link href={`/chat/${conversation.id}`} onClick={() => setOpen(false)} className="min-w-0 flex-1 truncate px-3 py-2.5 pr-10">{conversation.title?.trim() || "Conversație fără titlu"}</Link>
-                    <button type="button" aria-label={`Acțiuni pentru ${conversation.title?.trim() || "conversația fără titlu"}`} onClick={() => setConversationMenu((current) => current === conversation.id ? null : conversation.id)} className="absolute right-1 flex size-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-700 hover:text-white"><MoreIcon /></button>
+                    <button type="button" aria-label={`Acțiuni pentru ${conversation.title?.trim() || "conversația fără titlu"}`} onClick={() => setConversationMenu((current) => current === conversation.id ? null : conversation.id)} className="absolute right-1 flex size-8 items-center justify-center rounded-lg text-nav-muted hover:bg-nav-hover hover:text-nav-foreground"><MoreIcon /></button>
                     {conversationMenu === conversation.id && (
-                      <div className="absolute right-1 top-9 z-10 rounded-xl border border-zinc-700 bg-zinc-800 p-1 shadow-xl">
-                        <button type="button" disabled={isPending} onClick={() => removeConversation(conversation.id)} className="whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm text-red-300 hover:bg-zinc-700 disabled:opacity-50">Șterge conversația</button>
+                      <div className="absolute right-1 top-9 z-10 rounded-xl border border-nav-border bg-nav-hover p-1 shadow-xl">
+                        <button type="button" disabled={isPending} onClick={() => removeConversation(conversation.id)} className="whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm text-red-300 hover:bg-nav-active disabled:opacity-50">Șterge conversația</button>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             </section>
-            <div className="flex items-center justify-between border-t border-border-subtle p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <form action={signOutAction}><button type="submit" className="flex min-h-11 items-center gap-2 rounded-[10px] px-3 text-sm text-foreground hover:bg-surface-raised"><SignOutIcon />Deconectare</button></form>
+            <div className="flex items-center justify-between border-t border-nav-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <form action={signOutAction}><button type="submit" className="flex min-h-11 items-center gap-2 rounded-[10px] px-3 text-sm text-nav-foreground hover:bg-nav-hover"><SignOutIcon />Deconectare</button></form>
               <ThemeToggle />
             </div>
           </aside>

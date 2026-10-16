@@ -26,7 +26,7 @@ export function ThemeToggle() {
       aria-label={isDark ? "Activează modul luminos" : "Activează modul întunecat"}
       title={isDark ? "Mod luminos" : "Mod întunecat"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="flex size-11 items-center justify-center rounded-[10px] text-foreground hover:bg-surface-raised"
+      className="flex size-11 items-center justify-center rounded-[10px] text-nav-foreground hover:bg-nav-hover"
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </button>
