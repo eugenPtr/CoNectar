@@ -101,7 +101,7 @@ export async function submitOnboardingAction(
         location: String(formData.get("location") ?? "").trim(),
         passions: String(formData.get("passions") ?? "").trim(),
         heartProjectSeeking: formData.get("heart_project_seeking") === "true",
-        heartProjects: JSON.parse(String(formData.get("heart_projects") ?? "[]")) as HeartProjectInput[],
+        heartProjects: formData.get("heart_project_seeking") === "true" ? [] : JSON.parse(String(formData.get("heart_projects") ?? "[]")) as HeartProjectInput[],
         resources: parseResourceLines(
           String(formData.get("free_resources") ?? ""),
           String(formData.get("paid_resources") ?? ""),

@@ -242,7 +242,7 @@ export default function OnboardingForm({
       free_resources: values.resources.filter((resource) => resource.classification === "free").map((resource) => resource.description).join("\n"),
       paid_resources: values.resources.filter((resource) => resource.classification === "paid").map((resource) => resource.description).join("\n"),
       heart_project_seeking: values.heartProject === false ? "true" : "false",
-      heart_projects: JSON.stringify(values.heartProjects),
+      heart_projects: JSON.stringify(values.heartProject === false ? [] : values.heartProjects),
       phone: values.phone,
       contact_email: values.contactEmail,
       website: values.website,

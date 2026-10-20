@@ -78,4 +78,45 @@ describe("Heart Project and Theme database boundary (live local stack)", () => {
     const after = await member.from("heart_project_theme_links").select("theme_id").eq("heart_project_id", projectId);
     expect(after.data).toEqual([{ theme_id: themeIds[1] }]);
   });
+
+  it("backfills a legacy description once without replacing later projects", async () => {
+    const email = `heart-legacy-${suffix}@example.com`;
+    const created = await service.auth.admin.createUser({ email, password, email_confirm: true });
+    expect(created.error).toBeNull();
+    const id = created.data.user!.id;
+    try {
+      expect((await service.from("members").insert({ id, email, role: "member" })).error).toBeNull();
+      expect((await service.from("profiles").insert({ member_id: id, first_name: "Ioana", last_name: "Pop", location: "Cluj", passions: "Păduri", heart_project_description: "  O pădure comunitară  ", heart_project_seeking: false })).error).toBeNull();
+      expect((await service.rpc("backfill_legacy_heart_projects")).error).toBeNull();
+      const first = await service.from("heart_projects").select("id, title, description, position").eq("member_id", id);
+      expect(first.data).toEqual([expect.objectContaining({ title: "Soul project", description: "O pădure comunitară", position: 0 })]);
+      expect((await service.rpc("backfill_legacy_heart_projects")).error).toBeNull();
+      const second = await service.from("heart_projects").select("id").eq("member_id", id);
+      expect(second.data).toEqual([{ id: first.data![0].id }]);
+    } finally {
+      await service.auth.admin.deleteUser(id);
+    }
+  });
+
+  it("rolls back the Profile update when its project replacement fails", async () => {
+    const community = await service.from("affiliated_communities").select("id").limit(1).single();
+    expect(community.error).toBeNull();
+    const before = await member.from("profiles").select("passions").eq("member_id", memberId).single();
+    const save = await member.rpc("update_own_profile", {
+      p_profile: {
+        first_name: "Ana", last_name: "Pop", location: "Cluj", passions: "Changed only in failed transaction",
+        heart_project_description: "", heart_project_seeking: false,
+        profile_context_embedding: vector(0), profile_context_embedding_input: "Pasiuni: Changed only in failed transaction",
+      },
+      p_socials: { phone: "+40700000000", email: `heart-${suffix}@example.com` },
+      p_resources: [{ id: crypto.randomUUID(), description: "Consiliere", classification: "free", position: 0, embedding: vector(0), embedding_input: "Consiliere" }],
+      p_community_ids: [community.data!.id],
+      p_projects: [{ id: crypto.randomUUID(), title: "Bad", description: "Invalid position", position: 10, embedding: vector(0), embedding_input: "Bad\nInvalid position" }],
+    });
+    expect(save.error).not.toBeNull();
+    const after = await member.from("profiles").select("passions").eq("member_id", memberId).single();
+    expect(after.data).toEqual(before.data);
+    const resources = await member.from("resources").select("id").eq("member_id", memberId);
+    expect(resources.data).toEqual([]);
+  });
 });

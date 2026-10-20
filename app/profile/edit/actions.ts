@@ -20,7 +20,7 @@ export async function saveProfileAction(formData: FormData) {
   const location = String(formData.get("location") ?? "").trim();
   const passions = String(formData.get("passions") ?? "").trim();
   const heartProjectSeeking = formData.get("heart_project_seeking") === "true";
-  const heartProjects = JSON.parse(String(formData.get("heart_projects") ?? "[]")) as HeartProjectInput[];
+  const heartProjects = heartProjectSeeking ? [] : JSON.parse(String(formData.get("heart_projects") ?? "[]")) as HeartProjectInput[];
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("contact_email") ?? "").trim();
   const communityIds = JSON.parse(String(formData.get("community_ids") ?? "[]")) as string[];

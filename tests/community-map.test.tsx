@@ -66,5 +66,6 @@ describe("Community Map", () => {
   it("states when the map has no published projects", () => {
     render(<CommunityMap themes={themes} projects={[]} />);
     expect(screen.getByText(/Încă nu există Proiecte de Suflet/)).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Natură" })).toBeInTheDocument();
   });
 });

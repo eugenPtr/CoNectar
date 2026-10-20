@@ -7,8 +7,10 @@ const themes = [
   { name: "Sănătate și terapie", description: "Sprijin pentru sănătate fizică, emoțională și psihică prin practici terapeutice." },
   { name: "Educație și învățare", description: "Cursuri, ateliere și programe prin care oamenii dobândesc cunoștințe și abilități." },
   { name: "Artă și cultură", description: "Expresie artistică, dans, muzică și proiecte culturale deschise comunității." },
-  { name: "Natură și agricultură", description: "Îngrijirea ecosistemelor, agroecologie, grădinărit și producție alimentară durabilă." },
+  { name: "Natură și agricultură", description: "Îngrijirea ecosistemelor, agroforesterie, grădinărit și producție alimentară durabilă." },
   { name: "Tehnologie civică", description: "Instrumente digitale dezvoltate pentru a rezolva nevoi ale comunității." },
+  { name: "Solidaritate și sprijin social", description: "Inițiative de ajutor reciproc, incluziune și susținere pentru oameni vulnerabili." },
+  { name: "Antreprenoriat local", description: "Afaceri și inițiative economice locale care creează valoare pentru comunitate." },
 ];
 const projects = [
   { title: "Casa dansului", description: "Amenajăm un spațiu unde oamenii pot dansa, participa la spectacole și întâlni artiști." },

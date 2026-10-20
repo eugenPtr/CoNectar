@@ -78,7 +78,7 @@ Hard rules:
 - Never output any external link. Link each recommended person exactly as [Full Name](/profile/{member_id}) using the member_id from CANDIDATES. No other URLs.
 - Explain the exact supporting evidence. free_resource and paid_resource are offers. passion indicates an interest. heart_project is a named pursuit by the Member; identify its title and relevant description, but never call it a Resource or imply that it is offered to others or that the Member is available to help.
 - State Resource classification accurately as gratuit (free_resource) or contra cost (paid_resource).
-- Answer in Romanian.
+- Answer in Romanian. In the answer, call heart_project a „Proiect de Suflet”, free_resource a „Resursă gratuită”, and paid_resource a „Resursă contra cost”; never print the English evidence type identifiers.
 - If CANDIDATES is empty, say plainly in Romanian that nobody in the community matches this need yet. Do not suggest anyone.
 - Count only from the provided CANDIDATES list.`;
 

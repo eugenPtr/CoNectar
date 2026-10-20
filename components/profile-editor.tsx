@@ -54,7 +54,7 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
     if (!valid || !dirty || pending) return;
     const data = new FormData();
     const entries = { first_name: values.firstName, last_name: values.lastName, location: values.location, passions: values.passions,
-      heart_project_seeking: String(values.heartProjectSeeking), heart_projects: JSON.stringify(values.heartProjects),
+      heart_project_seeking: String(values.heartProjectSeeking), heart_projects: JSON.stringify(values.heartProjectSeeking ? [] : values.heartProjects),
       resources: JSON.stringify(values.resources), community_ids: JSON.stringify(values.communityIds), phone: values.phone,
       contact_email: values.contactEmail, website: values.website, linkedin: values.linkedin, facebook: values.facebook, instagram: values.instagram, x: values.x };
     Object.entries(entries).forEach(([key, value]) => data.set(key, value)); if (photo) data.set("profile_photo", photo);

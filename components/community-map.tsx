@@ -134,7 +134,8 @@ export function CommunityMap({ themes, projects }: { themes: MapTheme[]; project
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Temă, proiect sau membru" className="mt-1 block w-full min-w-60 rounded-lg border border-control bg-surface px-3 py-2 text-foreground" />
         </label>
       </div>
-      {projects.length === 0 ? <p className="rounded-xl border border-subtle bg-surface p-6 text-secondary">Încă nu există Proiecte de Suflet publicate.</p> : (
+      {projects.length === 0 ? <p className="rounded-xl border border-subtle bg-surface p-6 text-secondary">Încă nu există Proiecte de Suflet publicate.</p> : null}
+      {projects.length === 0 && themes.length === 0 ? null : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
           <div className="min-w-0 space-y-3">
             <div className="relative overflow-hidden rounded-xl border border-subtle bg-surface-raised">
