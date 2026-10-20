@@ -39,9 +39,6 @@ export function ProfileView({
   profile: MemberProfile;
   isOwn: boolean;
 }) {
-  const heartProject = profile.heartProjectSeeking
-    ? "În căutare"
-    : profile.heartProjectDescription;
   const socialEntries = SOCIAL_ORDER.flatMap((key) => {
     const value = profile.socials[key];
     return value ? [{ key, value }] : [];
@@ -100,10 +97,9 @@ export function ProfileView({
           </p>
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-zinc-300">Proiect de Suflet</h2>
-          <p className="mt-2 whitespace-pre-line rounded-lg border border-zinc-700 px-3 py-2 text-sm text-white">
-            {heartProject}
-          </p>
+          <h2 className="text-sm font-semibold text-zinc-300">Proiecte de Suflet</h2>
+          {profile.heartProjects.length ? <ol className="mt-2 space-y-2">{profile.heartProjects.map((project) => <li key={project.id} className="rounded-lg border border-zinc-700 px-3 py-2 text-sm text-white"><h3 className="font-semibold">{project.title}</h3><p className="mt-1 whitespace-pre-line">{project.description}</p></li>)}</ol>
+            : <p className="mt-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-white">{profile.heartProjectSeeking ? "În căutare" : "Niciun proiect publicat"}</p>}
         </div>
 
         {socialEntries.length > 0 && (

@@ -9,6 +9,7 @@ import { serializeEmbedding } from "@/lib/people-search/serialize-embedding";
 import { normalizeResources } from "@/lib/resources/model";
 import { withPersistedResourceId } from "@/lib/resources/persistence";
 import { validateProfilePhoto } from "@/lib/profile/photo";
+import { normalizeHeartProjects, prepareHeartProjects, supabaseHeartProjectClient, type HeartProjectInput } from "@/lib/heart-projects/save";
 
 export async function saveProfileAction(formData: FormData) {
   const supabase = await createSupabaseServerClient();
@@ -19,13 +20,13 @@ export async function saveProfileAction(formData: FormData) {
   const location = String(formData.get("location") ?? "").trim();
   const passions = String(formData.get("passions") ?? "").trim();
   const heartProjectSeeking = formData.get("heart_project_seeking") === "true";
-  const heartProjectDescription = String(formData.get("heart_project_description") ?? "").trim();
+  const heartProjects = JSON.parse(String(formData.get("heart_projects") ?? "[]")) as HeartProjectInput[];
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("contact_email") ?? "").trim();
   const communityIds = JSON.parse(String(formData.get("community_ids") ?? "[]")) as string[];
   const rawResources = JSON.parse(String(formData.get("resources") ?? "[]")) as Array<{ id?: string; description: string; classification: "free" | "paid" }>;
   const resources = normalizeResources(rawResources);
-  if (!firstName || !lastName || !location || !passions || (!heartProjectSeeking && !heartProjectDescription) ||
+  if (!firstName || !lastName || !location || !passions || (!heartProjectSeeking && !heartProjects.length) || !normalizeHeartProjects(heartProjects) ||
     !phone.startsWith("+") || !isPossiblePhoneNumber(phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
     communityIds.length < 1 || !resources) return { kind: "invalid" } as const;
 
@@ -33,16 +34,28 @@ export async function saveProfileAction(formData: FormData) {
     supabase.from("profiles").select("profile_photo_path, profile_context_embedding_input, profile_context_embedding").eq("member_id", user.id).single(),
     supabase.from("resources").select("id, embedding, embedding_input").eq("member_id", user.id),
   ]);
-  const contextInput = buildProfileContextEmbeddingInput({ passions, heartProjectDescription, heartProjectSeeking });
-  const contextEmbedding = currentProfile?.profile_context_embedding_input === contextInput
-    ? currentProfile.profile_context_embedding : await gatewayEmbedder(contextInput);
+  const contextInput = buildProfileContextEmbeddingInput({ passions, heartProjectSeeking });
+  let contextEmbedding;
+  let indexedProjects;
+  try {
+    [contextEmbedding, indexedProjects] = await Promise.all([
+      currentProfile?.profile_context_embedding_input === contextInput
+        ? Promise.resolve(currentProfile.profile_context_embedding) : gatewayEmbedder(contextInput),
+      prepareHeartProjects({ db: supabaseHeartProjectClient(supabase), embedder: gatewayEmbedder }, { memberId: user.id, projects: heartProjects }),
+    ]);
+    if (!indexedProjects) return { kind: "invalid" } as const;
+  } catch (error) {
+    console.error("Heart Project indexing failed", error);
+    return { kind: "failed" } as const;
+  }
   const existing = new Map((currentResources ?? []).map((resource) => [resource.id, resource]));
   const positions = { free: 0, paid: 0 };
-  const indexed = await Promise.all(resources.map(async (resource, index) => {
+  let indexed;
+  try { indexed = await Promise.all(resources.map(async (resource, index) => {
     const id = rawResources[index]?.id && existing.has(rawResources[index].id!) ? rawResources[index].id! : crypto.randomUUID();
     const previous = existing.get(id);
     return { ...withPersistedResourceId(resource, id), position: positions[resource.classification]++, embedding: serializeEmbedding(previous?.embedding_input === resource.description ? previous.embedding : await gatewayEmbedder(resource.description)), embedding_input: resource.description };
-  }));
+  })); } catch (error) { console.error("Resource indexing failed", error); return { kind: "failed" } as const; }
 
   const photo = formData.get("profile_photo");
   let newPath: string | undefined;
@@ -56,10 +69,11 @@ export async function saveProfileAction(formData: FormData) {
 
   const socials = Object.fromEntries(["website", "linkedin", "facebook", "instagram", "x"].map((key) => [key, String(formData.get(key) ?? "").trim()]));
   const { error } = await supabase.rpc("update_own_profile", {
-    p_profile: { first_name: firstName, last_name: lastName, location, passions, heart_project_description: heartProjectDescription,
+    p_profile: { first_name: firstName, last_name: lastName, location, passions, heart_project_description: "",
       heart_project_seeking: heartProjectSeeking, profile_photo_path: newPath ?? "", profile_context_embedding: serializeEmbedding(contextEmbedding), profile_context_embedding_input: contextInput },
     p_socials: { ...socials, phone: parsePhoneNumber(phone).number, email },
     p_resources: indexed,
+    p_projects: indexedProjects.map((project) => ({ ...project, embedding: serializeEmbedding(project.embedding), embedding_input: project.embeddingInput })),
     p_community_ids: communityIds,
   });
   if (error) {

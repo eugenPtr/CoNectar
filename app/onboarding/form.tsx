@@ -13,6 +13,8 @@ import examples from "libphonenumber-js/mobile/examples";
 import { toast } from "sonner";
 import { ResourceEditor, type EditableResource } from "@/components/resource-editor";
 import { ProfilePhotoPicker } from "@/components/profile-photo-picker";
+import { HeartProjectEditor } from "@/components/heart-project-editor";
+import type { HeartProjectInput } from "@/lib/heart-projects/save";
 
 type OnboardingFormProps = {
   invite: string;
@@ -62,7 +64,7 @@ export default function OnboardingForm({
     location: "",
     passions: "",
     heartProject: null as boolean | null,
-    heartProjectDescription: "",
+    heartProjects: [] as HeartProjectInput[],
     resources: [] as EditableResource[],
     phone: "",
     contactEmail: "",
@@ -77,6 +79,7 @@ export default function OnboardingForm({
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [phoneCountry, setPhoneCountry] = useState<Country | undefined>("RO");
   const [submitting, setSubmitting] = useState(false);
+  const [projectDraftPending, setProjectDraftPending] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [invalid, setInvalid] = useState<string[]>([]);
 
@@ -87,7 +90,7 @@ export default function OnboardingForm({
         ? Boolean(
             values.passions.trim() &&
               values.heartProject !== null &&
-              (values.heartProject === false || values.heartProjectDescription.trim()),
+              (values.heartProject === false || (values.heartProjects.length > 0 && !projectDraftPending)),
           )
         : step === 3
           ? values.resources.length > 0
@@ -119,7 +122,8 @@ export default function OnboardingForm({
           ) {
             localStorage.removeItem(draftKey);
           } else {
-            setValues(draft.values);
+            const legacy = draft.values as typeof values & { heartProjectDescription?: string };
+            setValues({ ...draft.values, heartProjects: legacy.heartProjects ?? (legacy.heartProjectDescription?.trim() ? [{ title: "Soul project", description: legacy.heartProjectDescription }] : []) });
             setPhoneCountry(draft.phoneCountry ?? "RO");
             const identityComplete = [
               draft.values.firstName,
@@ -130,7 +134,7 @@ export default function OnboardingForm({
               draft.values.passions?.trim() &&
               draft.values.heartProject !== null &&
               (draft.values.heartProject === false ||
-                draft.values.heartProjectDescription?.trim());
+                draft.values.heartProjects?.length > 0 || legacy.heartProjectDescription?.trim());
             setStep(
               !identityComplete
                 ? 1
@@ -177,7 +181,7 @@ export default function OnboardingForm({
     setPhoto(file); setPhotoPreview(URL.createObjectURL(file));
   }
 
-  function update(field: Exclude<keyof typeof values, "resources">, value: string) {
+  function update(field: Exclude<keyof typeof values, "resources" | "heartProjects" | "communityIds">, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
     setInvalid((current) => current.filter((name) => name !== field));
   }
@@ -191,8 +195,8 @@ export default function OnboardingForm({
         : step === 2 ? [
             ...(["passions"] as const).filter((field) => !values[field].trim()),
             ...(values.heartProject === null ? ["heartProject"] : []),
-            ...(values.heartProject === true && !values.heartProjectDescription.trim()
-              ? ["heartProjectDescription"]
+            ...(values.heartProject === true && (!values.heartProjects.length || projectDraftPending)
+              ? ["heartProjects"]
               : []),
           ] : values.resources.length === 0
               ? ["resources"] : [];
@@ -238,7 +242,7 @@ export default function OnboardingForm({
       free_resources: values.resources.filter((resource) => resource.classification === "free").map((resource) => resource.description).join("\n"),
       paid_resources: values.resources.filter((resource) => resource.classification === "paid").map((resource) => resource.description).join("\n"),
       heart_project_seeking: values.heartProject === false ? "true" : "false",
-      heart_project_description: values.heartProjectDescription,
+      heart_projects: JSON.stringify(values.heartProjects),
       phone: values.phone,
       contact_email: values.contactEmail,
       website: values.website,
@@ -273,8 +277,8 @@ export default function OnboardingForm({
           const profileMissing = [
             ...(!values.passions.trim() ? ["passions"] : []),
             ...(values.heartProject === null ? ["heartProject"] : []),
-            ...(values.heartProject === true && !values.heartProjectDescription.trim()
-              ? ["heartProjectDescription"]
+            ...(values.heartProject === true && (!values.heartProjects.length || projectDraftPending)
+              ? ["heartProjects"]
               : []),
           ];
           const resourceMissing = values.resources.length === 0 ? ["resources"] : [];
@@ -505,6 +509,7 @@ export default function OnboardingForm({
                     aria-pressed={values.heartProject === choice}
                     onClick={() => {
                       setValues((current) => ({ ...current, heartProject: choice }));
+                      if (!choice) setProjectDraftPending(false);
                       setInvalid((current) => current.filter((name) => name !== "heartProject"));
                     }}
                     className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
@@ -518,23 +523,7 @@ export default function OnboardingForm({
                 ))}
               </div>
             </div>
-            {values.heartProject === true ? (
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="heart_project_description" className="text-sm font-medium">
-                  Descrie-ți Proiectul de Suflet (obligatoriu)
-                </label>
-                <textarea
-                  id="heart_project_description"
-                  required
-                  rows={4}
-                  value={values.heartProjectDescription}
-                  onChange={(event) => update("heartProjectDescription", event.target.value)}
-                  aria-invalid={invalid.includes("heartProjectDescription")}
-                  className={fieldClass(invalid.includes("heartProjectDescription"))}
-                  placeholder="Ce îți dorești cel mai mult să construiești sau să creezi?"
-                />
-              </div>
-            ) : null}
+            {values.heartProject === true ? <div aria-invalid={invalid.includes("heartProjects")}><HeartProjectEditor projects={values.heartProjects} onChange={(projects) => { setValues((current) => ({ ...current, heartProjects: projects })); setInvalid((current) => current.filter((name) => name !== "heartProjects")); }} onPendingChange={setProjectDraftPending} /></div> : null}
           </>
         ) : null}
 
@@ -644,6 +633,7 @@ export default function OnboardingForm({
           )}
         </div>
       </form>
+      {submitting && <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"><div className="rounded-xl bg-zinc-900 p-6 text-center text-white"><span aria-hidden="true" className="mx-auto mb-3 block size-8 animate-spin rounded-full border-4 border-white border-r-transparent" />Se salvează proiectele și se actualizează harta…</div></div>}
     </main>
   );
 }

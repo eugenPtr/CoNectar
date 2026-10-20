@@ -8,6 +8,7 @@ import { parseResourceLines } from "@/lib/resources/model";
 import { validateProfilePhoto } from "@/lib/profile/photo";
 import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
 import { isUniversalInviteCode, universalInviteConfig } from "@/lib/invites/universal";
+import type { HeartProjectInput } from "@/lib/heart-projects/save";
 
 export type SubmitOnboardingActionResult =
   | { kind: "ok" }
@@ -73,7 +74,7 @@ export async function submitOnboardingAction(
                 last_name: payload.lastName,
                 location: payload.location,
                 passions: payload.passions,
-                heart_project_description: payload.heartProjectDescription ?? "",
+                heart_project_description: "",
                 heart_project_seeking: payload.heartProjectSeeking,
                 profile_context_embedding: JSON.stringify(payload.profileContextEmbedding),
                 profile_context_embedding_input: payload.profileContextEmbeddingInput,
@@ -84,6 +85,7 @@ export async function submitOnboardingAction(
                 ...resource,
                 embedding: JSON.stringify(resource.embedding),
               })),
+              p_projects: payload.projects.map((project) => ({ ...project, embedding: JSON.stringify(project.embedding), embedding_input: project.embeddingInput })),
               p_community_ids: payload.communityIds,
             });
             return { error: error ? { code: error.code, message: error.message } : null };
@@ -99,7 +101,7 @@ export async function submitOnboardingAction(
         location: String(formData.get("location") ?? "").trim(),
         passions: String(formData.get("passions") ?? "").trim(),
         heartProjectSeeking: formData.get("heart_project_seeking") === "true",
-        heartProjectDescription: String(formData.get("heart_project_description") ?? "").trim() || undefined,
+        heartProjects: JSON.parse(String(formData.get("heart_projects") ?? "[]")) as HeartProjectInput[],
         resources: parseResourceLines(
           String(formData.get("free_resources") ?? ""),
           String(formData.get("paid_resources") ?? ""),

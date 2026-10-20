@@ -6,7 +6,7 @@ import { ProfileView } from "@/components/profile-view";
 
 const base = {
   id: "m1", name: "Ana Pop", location: "Cluj", passions: "Muzică",
-  heartProjectDescription: null, heartProjectSeeking: true, socials: {},
+  heartProjectDescription: null, heartProjectSeeking: true, heartProjects: [], socials: {},
 };
 
 describe("ProfileView Resources", () => {
@@ -42,5 +42,13 @@ describe("ProfileView Resources", () => {
     render(<ProfileView isOwn={false} profile={{ ...base, resources: [] }} />);
     expect(screen.getByText("Muzică")).toHaveClass("border-zinc-700");
     expect(screen.getByText("În căutare")).toHaveClass("border-zinc-700");
+  });
+
+  it("shows each Heart Project as a distinct ordered pursuit", () => {
+    render(<ProfileView isOwn={false} profile={{ ...base, resources: [], heartProjects: [
+      { id: "a", title: "Dans", description: "Spațiu de dans", position: 0 },
+      { id: "b", title: "Pădure", description: "Plantare", position: 1 },
+    ] }} />);
+    expect(screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)).toEqual(["Dans", "Pădure"]);
   });
 });

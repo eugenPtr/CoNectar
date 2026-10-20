@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import { BackButton } from "@/components/back-button";
 import { ProfilePhotoPicker } from "@/components/profile-photo-picker";
 import { ResourceEditor, type EditableResource } from "@/components/resource-editor";
+import { HeartProjectEditor } from "@/components/heart-project-editor";
 import type { MemberProfile } from "@/lib/profile/get";
 import { saveProfileAction } from "@/app/profile/edit/actions";
+import type { HeartProjectInput } from "@/lib/heart-projects/save";
 
 const fieldClass = (invalid: boolean) => `rounded border bg-zinc-950 px-3 py-2 outline-none focus:ring-2 focus:ring-white ${invalid ? "border-red-600" : "border-zinc-600"}`;
 
@@ -17,7 +19,7 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
   const initialValues = useMemo(() => ({
     firstName: initial.firstName ?? initial.name.split(" ")[0] ?? "", lastName: initial.lastName ?? initial.name.split(" ").slice(1).join(" "), location: initial.location,
     passions: initial.passions, heartProjectSeeking: initial.heartProjectSeeking,
-    heartProjectDescription: initial.heartProjectDescription ?? "", resources: initial.resources as EditableResource[],
+    heartProjects: initial.heartProjects as HeartProjectInput[], resources: initial.resources as EditableResource[],
     communityIds: (initial.communities ?? []).map((item) => item.id), phone: initial.socials.phone ?? "",
     contactEmail: initial.socials.email ?? "", website: initial.socials.website ?? "", linkedin: initial.socials.linkedin ?? "",
     facebook: initial.socials.facebook ?? "", instagram: initial.socials.instagram ?? "", x: initial.socials.x ?? "",
@@ -26,9 +28,10 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const dirty = JSON.stringify(values) !== JSON.stringify(initialValues) || Boolean(photo);
+  const [projectDraftPending, setProjectDraftPending] = useState(false);
+  const dirty = JSON.stringify(values) !== JSON.stringify(initialValues) || Boolean(photo) || projectDraftPending;
   const valid = Boolean(values.firstName.trim() && values.lastName.trim() && values.location.trim() && values.passions.trim() &&
-    (values.heartProjectSeeking || values.heartProjectDescription.trim()) && values.resources.length && values.communityIds.length &&
+    !projectDraftPending && (values.heartProjectSeeking || values.heartProjects.length > 0) && values.heartProjects.length <= 10 && values.resources.length && values.communityIds.length &&
     values.phone && isPossiblePhoneNumber(values.phone) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail.trim()));
   useEffect(() => {
     if (!dirty) return;
@@ -51,7 +54,7 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
     if (!valid || !dirty || pending) return;
     const data = new FormData();
     const entries = { first_name: values.firstName, last_name: values.lastName, location: values.location, passions: values.passions,
-      heart_project_seeking: String(values.heartProjectSeeking), heart_project_description: values.heartProjectDescription,
+      heart_project_seeking: String(values.heartProjectSeeking), heart_projects: JSON.stringify(values.heartProjects),
       resources: JSON.stringify(values.resources), community_ids: JSON.stringify(values.communityIds), phone: values.phone,
       contact_email: values.contactEmail, website: values.website, linkedin: values.linkedin, facebook: values.facebook, instagram: values.instagram, x: values.x };
     Object.entries(entries).forEach(([key, value]) => data.set(key, value)); if (photo) data.set("profile_photo", photo);
@@ -72,10 +75,10 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
         <label className="flex flex-col gap-1.5 text-sm">Localitate<input value={values.location} onChange={(e) => update("location", e.target.value)} aria-invalid={textInvalid(values.location)} className={fieldClass(textInvalid(values.location))} /></label>
         <fieldset aria-invalid={!values.communityIds.length} className={`rounded-lg border p-4 ${values.communityIds.length ? "border-zinc-700" : "border-red-600"}`}><legend className="px-1 text-sm">Comunități afiliate</legend>{communities.map((community) => <label key={community.id} className="mt-2 flex gap-3 text-sm"><input type="checkbox" checked={values.communityIds.includes(community.id)} onChange={(e) => update("communityIds", e.target.checked ? [...values.communityIds, community.id] : values.communityIds.filter((id) => id !== community.id))} />{community.name}</label>)}</fieldset>
       </section>
-      <section className="space-y-4"><h2 className="font-semibold">Pasiuni și Proiect de Suflet</h2>
+      <section className="space-y-4"><h2 className="font-semibold">Pasiuni și Proiecte de Suflet</h2>
         <label className="flex flex-col gap-1.5 text-sm">Pasiuni<textarea rows={3} value={values.passions} onChange={(e) => update("passions", e.target.value)} aria-invalid={textInvalid(values.passions)} className={fieldClass(textInvalid(values.passions))} /></label>
-        <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={values.heartProjectSeeking} onChange={(e) => update("heartProjectSeeking", e.target.checked)} />Încă îmi caut Proiectul de Suflet</label>
-        {!values.heartProjectSeeking && <label className="flex flex-col gap-1.5 text-sm">Proiect de Suflet<textarea rows={3} value={values.heartProjectDescription} onChange={(e) => update("heartProjectDescription", e.target.value)} aria-invalid={textInvalid(values.heartProjectDescription)} className={fieldClass(textInvalid(values.heartProjectDescription))} /></label>}
+        <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={values.heartProjectSeeking} onChange={(e) => { update("heartProjectSeeking", e.target.checked); if (e.target.checked) setProjectDraftPending(false); }} />Încă îmi caut Proiectul de Suflet</label>
+        {!values.heartProjectSeeking && <HeartProjectEditor projects={values.heartProjects} onChange={(projects) => update("heartProjects", projects)} onPendingChange={setProjectDraftPending} />}
       </section>
       <fieldset aria-invalid={!values.resources.length} className={!values.resources.length ? "rounded-lg border border-red-600 p-3" : ""}><legend className="mb-4 font-semibold">Resurse</legend><ResourceEditor resources={values.resources} onChange={(resources) => update("resources", resources)} /></fieldset>
       <section className="space-y-4"><h2 className="font-semibold">Contact</h2>
@@ -85,5 +88,6 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
       </section>
       <button type="button" onClick={save} disabled={!valid || !dirty || pending} className="sticky bottom-4 min-h-11 w-full rounded-[10px] bg-action px-4 py-3 font-semibold text-action-foreground hover:bg-action-hover active:brightness-95 disabled:opacity-40">{pending ? "Se salvează…" : "Salvează profilul"}</button>
     </form>
+    {pending && <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"><div className="rounded-xl bg-zinc-900 p-6 text-center text-white"><span aria-hidden="true" className="mx-auto mb-3 block size-8 animate-spin rounded-full border-4 border-white border-r-transparent" />Se salvează proiectele și se actualizează harta…</div></div>}
   </main>;
 }
