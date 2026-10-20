@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AdminInviteTable } from "@/components/admin-invite-table";
 import { AdminUniversalInvite } from "@/components/admin-universal-invite";
+import { AdminThemeManager } from "@/components/admin-theme-manager";
 import { listInvites, supabaseListInvitesClient } from "@/lib/invites/list";
 import { listUniversalInviteSignups } from "@/lib/invites/list-universal-signups";
 import { universalInviteConfig } from "@/lib/invites/universal";
@@ -27,14 +28,16 @@ export default async function AdminDashboardPage() {
 
   const service = createSupabaseServiceClient();
   const config = universalInviteConfig();
-  const [invites, signups, conflictResult] = await Promise.all([
+  const [invites, signups, conflictResult, themesResult] = await Promise.all([
     listInvites(supabaseListInvitesClient(service)),
     listUniversalInviteSignups(service),
     config.code
       ? service.from("invites").select("code").eq("code", config.code).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
+    supabase.from("themes").select("id,name,description,archived_at").order("name"),
   ]);
   if (conflictResult.error) throw new Error(conflictResult.error.message);
+  if (themesResult.error) throw new Error(themesResult.error.message);
 
   return (
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
@@ -47,6 +50,7 @@ export default async function AdminDashboardPage() {
           signups={signups}
         />
         <AdminInviteTable invites={invites} />
+        <AdminThemeManager themes={themesResult.data ?? []} />
       </main>
   );
 }
