@@ -55,6 +55,17 @@ describe("Heart Project and Theme database boundary (live local stack)", () => {
     const projectId = crypto.randomUUID();
     const saved = await member.rpc("replace_own_heart_projects", { p_projects: [{ id: projectId, title: "Dans", description: "Spațiu de dans", position: 0, embedding: vector(0), embedding_input: "Dans\nSpațiu de dans" }] });
     expect(saved.error).toBeNull();
+    const pursuitMatches = await member.rpc("match_heart_projects", {
+      query_embedding: vector(0), match_count: 10, min_similarity: 0.3,
+    });
+    expect(pursuitMatches.error).toBeNull();
+    expect(pursuitMatches.data).toEqual(expect.arrayContaining([
+      expect.objectContaining({ project_id: projectId, title: "Dans", member_id: memberId }),
+    ]));
+    const outsiderMatches = await outsider.rpc("match_heart_projects", {
+      query_embedding: vector(0), match_count: 10, min_similarity: 0.3,
+    });
+    expect(outsiderMatches.data ?? []).toEqual([]);
     const links = await member.from("heart_project_theme_links").select("theme_id, similarity, match_version").eq("heart_project_id", projectId);
     expect(links.error).toBeNull();
     expect(links.data?.map((link) => link.theme_id).sort()).toEqual(themeIds.slice(0, 2).sort());
