@@ -518,14 +518,15 @@ export function pgliteSearchMembersAdapter(db: PGlite): SearchMembersDbClient {
     },
     async matchProfileContexts({ queryEmbedding, matchCount, minSimilarity }) {
       const result = await db.query<{
-        member_id: string; first_name: string; last_name: string; passions: string;
-        heart_project_description: string | null; heart_project_seeking: boolean; similarity: number;
+        member_id: string; first_name: string; last_name: string; passions: string; similarity: number;
       }>(`select * from match_profile_contexts($1, $2, $3)`, [queryEmbedding, matchCount, minSimilarity]);
       return { data: result.rows.map((r) => ({
         memberId: r.member_id, firstName: r.first_name, lastName: r.last_name,
-        passions: r.passions, heartProjectDescription: r.heart_project_description,
-        heartProjectSeeking: r.heart_project_seeking, similarity: r.similarity,
+        passions: r.passions, similarity: r.similarity,
       })), error: null };
+    },
+    async matchHeartProjects() {
+      return { data: [], error: null };
     },
   };
 }
