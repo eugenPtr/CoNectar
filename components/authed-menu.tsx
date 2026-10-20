@@ -59,6 +59,7 @@ export function AuthedMenu({
     <>
       <Link href="/" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Chat</Link>
       <Link href="/members" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Membri</Link>
+      <Link href="/community-map" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Harta comunității</Link>
       <Link href="/profile" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Profil</Link>
       {isAdmin && <Link href="/admin/dashboard" onClick={() => setOpen(false)} className="block rounded-[10px] px-3 py-2.5 text-sm text-nav-foreground hover:bg-nav-hover">Admin</Link>}
     </>
@@ -82,6 +83,7 @@ export function AuthedMenu({
       <nav aria-label="Navigare principală" className="hidden items-center gap-1 md:flex">
         <Link href="/" aria-current={pathname === "/" || pathname.startsWith("/chat/") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Chat</Link>
         <Link href="/members" aria-current={pathname.startsWith("/members") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Membri</Link>
+        <Link href="/community-map" aria-current={pathname.startsWith("/community-map") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Harta comunității</Link>
         <Link href="/profile" aria-current={pathname === "/profile" ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Profil</Link>
         {isAdmin && <Link href="/admin/dashboard" aria-current={pathname.startsWith("/admin") ? "page" : undefined} className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-nav-foreground hover:bg-nav-hover aria-[current=page]:bg-nav-active">Admin</Link>}
         <form action={signOutAction}>
