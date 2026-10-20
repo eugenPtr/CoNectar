@@ -36,7 +36,7 @@ Reached via `/admin/dashboard`.
 _Avoid_: Admin panel, console, backoffice
 
 **Profile**:
-The information a Member publishes about themselves: name, location, Contact Details, Heart Project,
+The information a Member publishes about themselves: name, location, Contact Details, Heart Projects,
 Passions, Resources, Community Affiliations, and an optional Profile Photo.
 _Avoid_: Bio, page, account
 
@@ -100,9 +100,11 @@ Required during onboarding. Published on the profile.
 _Avoid_: Interests, hobbies, bio
 
 **Heart Project**:
-The single pursuit a Member is most devoted to — the work or becoming they do with love.
-A Member either has one (described in their own words) or is still seeking one.
-Published on the profile and searchable alongside Resources.
+A pursuit a Member is devoted to — work or becoming they do with love. Shown as
+**Proiect de Suflet** in the Romanian interface. A Member may publish zero to ten distinct
+Heart Projects, each with a title and description in their own words. A Member with none
+may still be seeking a Heart Project. Published separately on the Profile and searchable
+as a pursuit, never as a Free or Paid Resource offered to others.
 _Avoid_: Project, initiative, work item
 
 **Community**:
@@ -128,7 +130,8 @@ _Avoid_: Directory, Roster, Community (the listing is not "the Community")
 
 **People Search**:
 The in-app AI chat where a Member asks in natural language for people who can help, and gets
-back matching Members with reasons. Powered by vector search over profiles + an LLM.
+back matching Members with reasons. Powered by separate vector retrieval of Resources,
+Passions as Profile context, and individual Heart Projects, followed by an LLM.
 _Avoid_: ChatGPT, the bot, assistant
 
 **Conversation**:
