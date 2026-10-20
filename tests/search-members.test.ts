@@ -3,7 +3,7 @@ import type { PGlite } from "@electric-sql/pglite";
 import { searchMembers, type GenerationRequest, type SearchMembersDbClient } from "@/lib/people-search/search-members";
 import { createTestDb, pgliteSearchMembersAdapter, seedMember } from "./db";
 
-describe("searchMembers dual-index orchestration", () => {
+describe("searchMembers three-path orchestration", () => {
   let db: PGlite;
   beforeEach(async () => { db = await createTestDb(); });
   afterEach(async () => { await db.close(); });
@@ -13,38 +13,49 @@ describe("searchMembers dual-index orchestration", () => {
     return { generate: (req: GenerationRequest) => { captured = req; return "ANSWER"; }, get: () => captured };
   }
 
-  it("embeds once, searches both indexes with separate tuning, and merges every evidence item by Member", async () => {
+  it("embeds once, searches all three indexes, and merges separate project evidence by Member", async () => {
     const embedder = vi.fn(async () => [1, 0, 0]);
     const matchResources = vi.fn<SearchMembersDbClient["matchResources"]>(async () => ({ data: [
       { memberId: "provider", firstName: "Ana", lastName: "Pop", resourceId: "r1", description: "Mentorat de produs", classification: "free", similarity: 0.82 },
       { memberId: "provider", firstName: "Ana", lastName: "Pop", resourceId: "r2", description: "Audit UX", classification: "paid", similarity: 0.75 },
     ], error: null }));
     const matchProfileContexts = vi.fn<SearchMembersDbClient["matchProfileContexts"]>(async () => ({ data: [
-      { memberId: "provider", firstName: "Ana", lastName: "Pop", passions: "design de produs", heartProjectDescription: "Accesibilitate digitală", heartProjectSeeking: false, similarity: 0.91 },
-      { memberId: "interested", firstName: "Mihai", lastName: "Ionescu", passions: "cercetare UX", heartProjectDescription: null, heartProjectSeeking: true, similarity: 0.95 },
+      { memberId: "provider", firstName: "Ana", lastName: "Pop", passions: "design de produs", similarity: 0.91 },
+      { memberId: "interested", firstName: "Mihai", lastName: "Ionescu", passions: "cercetare UX", similarity: 0.95 },
+    ], error: null }));
+    const matchHeartProjects = vi.fn(async () => ({ data: [
+      { memberId: "provider", firstName: "Ana", lastName: "Pop", projectId: "hp1", title: "Accesibilitate digitală", description: "Construiesc produse digitale accesibile", similarity: 0.93 },
+      { memberId: "provider", firstName: "Ana", lastName: "Pop", projectId: "hp2", title: "Atelier UX", description: "Organizez ateliere de cercetare UX", similarity: 0.81 },
     ], error: null }));
     const cap = captureGenerate();
     const { candidates } = await searchMembers(
-      { embedder, db: { matchResources, matchProfileContexts }, generate: cap.generate },
+      { embedder, db: { matchResources, matchProfileContexts, matchHeartProjects }, generate: cap.generate },
       { query: "Caut pe cineva care mă poate ajuta cu UX", searcherId: "self" },
     );
 
     expect(embedder).toHaveBeenCalledTimes(1);
     expect(matchResources).toHaveBeenCalledWith(expect.objectContaining({ matchCount: 12, minSimilarity: 0.3 }));
     expect(matchProfileContexts).toHaveBeenCalledWith(expect.objectContaining({ matchCount: 12, minSimilarity: 0.3 }));
+    expect(matchHeartProjects).toHaveBeenCalledWith(expect.objectContaining({ minSimilarity: 0.3 }));
     expect(matchResources.mock.calls[0][0].queryEmbedding).toBe(matchProfileContexts.mock.calls[0][0].queryEmbedding);
     expect(candidates.map((candidate) => candidate.memberId)).toEqual(["provider", "interested"]);
     expect(candidates[0].evidence.map((evidence) => evidence.type)).toEqual([
-      "free_resource", "paid_resource", "passion", "heart_project",
+      "free_resource", "paid_resource", "passion", "heart_project", "heart_project",
     ]);
+    expect(candidates[0].evidence.filter((evidence) => evidence.type === "heart_project")).toEqual([
+      expect.objectContaining({ projectId: "hp1", title: "Accesibilitate digitală", text: "Construiesc produse digitale accesibile" }),
+      expect.objectContaining({ projectId: "hp2", title: "Atelier UX", text: "Organizez ateliere de cercetare UX" }),
+    ]);
+    expect(cap.get()?.contextBlock).toContain("title: \"Accesibilitate digitală\"");
     expect(cap.get()?.contextBlock).toContain('type: passion\n      text: "design de produs"');
-    expect(cap.get()?.system).toContain("never describe them as an offer");
+    expect(cap.get()?.system).toContain("never call it a Resource");
   });
 
   it("ranks general topic matches by similarity, including interest-only Members", async () => {
     const dbClient: SearchMembersDbClient = {
       matchResources: async () => ({ data: [{ memberId: "provider", firstName: "Ana", lastName: "Pop", resourceId: "r1", description: "Atelier ceramică", classification: "paid", similarity: 0.72 }], error: null }),
-      matchProfileContexts: async () => ({ data: [{ memberId: "enthusiast", firstName: "Dan", lastName: "Stan", passions: "ceramică japoneză", heartProjectDescription: null, heartProjectSeeking: false, similarity: 0.94 }], error: null }),
+      matchProfileContexts: async () => ({ data: [{ memberId: "enthusiast", firstName: "Dan", lastName: "Stan", passions: "ceramică japoneză", similarity: 0.94 }], error: null }),
+      matchHeartProjects: async () => ({ data: [], error: null }),
     };
     const { candidates } = await searchMembers(
       { embedder: async () => [1, 0, 0], db: dbClient, generate: () => "ok" },
@@ -82,6 +93,7 @@ describe("searchMembers dual-index orchestration", () => {
     const empty: SearchMembersDbClient = {
       matchResources: async () => ({ data: [], error: null }),
       matchProfileContexts: async () => ({ data: [], error: null }),
+      matchHeartProjects: async () => ({ data: [], error: null }),
     };
     const { candidates } = await searchMembers(
       { embedder: async () => [0, 1, 0], db: empty, generate: cap.generate },
@@ -101,6 +113,7 @@ describe("searchMembers dual-index orchestration", () => {
         error: null,
       }),
       matchProfileContexts: async () => ({ data: [], error: null }),
+      matchHeartProjects: async () => ({ data: [], error: null }),
     };
 
     const { result } = await searchMembers(
@@ -131,6 +144,7 @@ describe("searchMembers dual-index orchestration", () => {
     const dbClient: SearchMembersDbClient = {
       matchResources: async () => ({ data: matches, error: null }),
       matchProfileContexts: async () => ({ data: [], error: null }),
+      matchHeartProjects: async () => ({ data: [], error: null }),
     };
 
     const { candidates } = await searchMembers(
