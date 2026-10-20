@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -79,6 +74,101 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "conversations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      heart_project_match_settings: {
+        Row: {
+          catalog_version: number
+          min_similarity: number
+          singleton: boolean
+        }
+        Insert: {
+          catalog_version?: number
+          min_similarity?: number
+          singleton?: boolean
+        }
+        Update: {
+          catalog_version?: number
+          min_similarity?: number
+          singleton?: boolean
+        }
+        Relationships: []
+      }
+      heart_project_theme_links: {
+        Row: {
+          heart_project_id: string
+          match_version: number
+          similarity: number
+          theme_id: string
+        }
+        Insert: {
+          heart_project_id: string
+          match_version: number
+          similarity: number
+          theme_id: string
+        }
+        Update: {
+          heart_project_id?: string
+          match_version?: number
+          similarity?: number
+          theme_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heart_project_theme_links_heart_project_id_fkey"
+            columns: ["heart_project_id"]
+            isOneToOne: false
+            referencedRelation: "heart_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heart_project_theme_links_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "themes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      heart_projects: {
+        Row: {
+          description: string
+          embedded_at: string | null
+          embedding: string | null
+          embedding_input: string | null
+          id: string
+          member_id: string
+          position: number
+          title: string
+        }
+        Insert: {
+          description: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_input?: string | null
+          id?: string
+          member_id: string
+          position: number
+          title: string
+        }
+        Update: {
+          description?: string
+          embedded_at?: string | null
+          embedding?: string | null
+          embedding_input?: string | null
+          id?: string
+          member_id?: string
+          position?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heart_projects_member_id_fkey"
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
@@ -340,6 +430,36 @@ export type Database = {
           },
         ]
       }
+      themes: {
+        Row: {
+          archived_at: string | null
+          description: string
+          embedded_at: string
+          embedding: string
+          embedding_input: string
+          id: string
+          name: string
+        }
+        Insert: {
+          archived_at?: string | null
+          description: string
+          embedded_at?: string
+          embedding: string
+          embedding_input: string
+          id?: string
+          name: string
+        }
+        Update: {
+          archived_at?: string | null
+          description?: string
+          embedded_at?: string
+          embedding?: string
+          embedding_input?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       universal_invite_signups: {
         Row: {
           code: string
@@ -375,19 +495,34 @@ export type Database = {
         Args: { p_code: string; p_email: string; p_user_id: string }
         Returns: string
       }
-      complete_onboarding: {
-        Args: {
-          p_code: string
-          p_community_ids: string[]
-          p_email: string
-          p_is_universal: boolean
-          p_profile: Json
-          p_resources: Json
-          p_socials: Json
-          p_user_id: string
-        }
-        Returns: string
-      }
+      complete_onboarding:
+        | {
+            Args: {
+              p_code: string
+              p_community_ids: string[]
+              p_email: string
+              p_is_universal: boolean
+              p_profile: Json
+              p_resources: Json
+              p_socials: Json
+              p_user_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_code: string
+              p_community_ids: string[]
+              p_email: string
+              p_is_universal: boolean
+              p_profile: Json
+              p_projects: Json
+              p_resources: Json
+              p_socials: Json
+              p_user_id: string
+            }
+            Returns: string
+          }
       delete_expired_conversations: { Args: never; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
       is_member: { Args: never; Returns: boolean }
@@ -423,16 +558,40 @@ export type Database = {
           similarity: number
         }[]
       }
-      replace_own_resources: { Args: { p_resources: Json }; Returns: undefined }
-      update_own_profile: {
-        Args: {
-          p_community_ids: string[]
-          p_profile: Json
-          p_resources: Json
-          p_socials: Json
-        }
+      rematch_all_heart_projects: { Args: never; Returns: undefined }
+      rematch_heart_project: {
+        Args: { p_project_id: string }
         Returns: undefined
       }
+      replace_heart_projects_for_member: {
+        Args: { p_member_id: string; p_projects: Json }
+        Returns: undefined
+      }
+      replace_own_heart_projects: {
+        Args: { p_projects: Json }
+        Returns: undefined
+      }
+      replace_own_resources: { Args: { p_resources: Json }; Returns: undefined }
+      update_own_profile:
+        | {
+            Args: {
+              p_community_ids: string[]
+              p_profile: Json
+              p_resources: Json
+              p_socials: Json
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_community_ids: string[]
+              p_profile: Json
+              p_projects: Json
+              p_resources: Json
+              p_socials: Json
+            }
+            Returns: undefined
+          }
     }
     Enums: {
       member_role: "member" | "admin"
@@ -452,12 +611,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -481,11 +640,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -506,11 +665,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends (DefaultSchemaTableNameOrOptions extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -531,11 +690,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never) = never,
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -548,11 +707,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never) = never,
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

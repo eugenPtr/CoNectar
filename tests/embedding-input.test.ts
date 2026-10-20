@@ -12,7 +12,7 @@ describe("buildEmbeddingInput", () => {
       heartProjectDescription: "Ateliere pentru copii",
       heartProjectSeeking: false,
     });
-    expect(input).toBe("Pasiuni: ceramică japoneză\nProiect de suflet: Ateliere pentru copii");
+    expect(input).toBe("Pasiuni: ceramică japoneză");
     expect(input).not.toContain("Mentorat tehnic");
   });
 });

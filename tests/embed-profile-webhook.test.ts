@@ -40,7 +40,7 @@ describe("embed-profile webhook", () => {
     expect(writeProfileContextEmbedding).toHaveBeenCalledWith({
       id: "member-007",
       embedding: [0.25, 0.5, 0.75],
-      embeddingInput: "Pasiuni: permacultură\nProiect de suflet: grădini comunitare\nCaută un proiect de suflet.",
+      embeddingInput: "Pasiuni: permacultură\nCaută un proiect de suflet.",
     });
   });
 

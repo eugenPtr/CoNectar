@@ -123,6 +123,8 @@ describe("update_own_profile RPC (live local stack)", () => {
         },
       ],
       p_community_ids: [communityId],
+      p_projects: [{ id: crypto.randomUUID(), title: "Dans", description: "Spațiu de dans", position: 0,
+        embedding: JSON.stringify(embedding), embedding_input: "Dans\nSpațiu de dans" }],
     });
 
     expect(result.error).toBeNull();
@@ -134,5 +136,25 @@ describe("update_own_profile RPC (live local stack)", () => {
     expect(saved.error).toBeNull();
     expect(saved.data?.first_name).toBe("After");
     expect(saved.data?.profile_context_embedded_at).not.toBeNull();
+    const projects = await client.from("heart_projects").select("title, description, position").eq("member_id", memberId);
+    expect(projects.error).toBeNull();
+    expect(projects.data).toEqual([{ title: "Dans", description: "Spațiu de dans", position: 0 }]);
+
+    const failed = await client.rpc("update_own_profile", {
+      p_profile: { first_name: "Should Roll Back", last_name: "Update", location: "Brașov", passions: "Testing",
+        heart_project_description: "", heart_project_seeking: true, profile_photo_path: "",
+        profile_context_embedding: JSON.stringify(embedding), profile_context_embedding_input: "Pasiuni: Testing" },
+      p_socials: { phone: "+40722000000", email },
+      p_resources: [{ id: resourceId, description: "Testare profil", classification: "free", position: 0,
+        embedding: JSON.stringify(embedding), embedding_input: "Testare profil" }],
+      p_community_ids: [communityId],
+      p_projects: [{ id: crypto.randomUUID(), title: "", description: "Invalid", position: 0,
+        embedding: JSON.stringify(embedding), embedding_input: "\nInvalid" }],
+    });
+    expect(failed.error).not.toBeNull();
+    const afterFailure = await service.from("profiles").select("first_name").eq("member_id", memberId).single();
+    expect(afterFailure.data?.first_name).toBe("After");
+    const projectsAfterFailure = await service.from("heart_projects").select("title").eq("member_id", memberId);
+    expect(projectsAfterFailure.data).toEqual([{ title: "Dans" }]);
   });
 });
