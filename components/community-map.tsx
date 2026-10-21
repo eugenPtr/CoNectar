@@ -127,7 +127,7 @@ export function CommunityMap({ themes, projects }: { themes: MapTheme[]; project
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Harta comunității</h2>
-          <p className="text-sm text-secondary">Explorează temele și Proiectele de Suflet ale membrilor.</p>
+          <p className="text-sm text-secondary">Apasa pe o tema pentru a evidentia proiectele asociate</p>
         </div>
         <label className="block text-sm font-medium text-foreground">
           Caută în hartă
