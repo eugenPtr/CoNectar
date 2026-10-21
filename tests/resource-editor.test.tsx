@@ -14,6 +14,16 @@ function Harness({ initial = [] }: { initial?: EditableResource[] }) {
   return <ResourceEditor resources={resources} onChange={setResources} />;
 }
 
+function RemountHarness() {
+  const [resources, setResources] = useState<EditableResource[]>([]);
+  const [version, setVersion] = useState(0);
+  return <>
+    <button type="button" onClick={() => setVersion((current) => current + 1)}>Remount editor</button>
+    <ResourceEditor key={version} resources={resources} onChange={setResources} />
+    <output data-testid="resource-ids">{resources.map((resource) => resource.id).join(",")}</output>
+  </>;
+}
+
 describe("ResourceEditor", () => {
   beforeEach(() => vi.clearAllMocks());
   afterEach(cleanup);
@@ -32,6 +42,34 @@ describe("ResourceEditor", () => {
     await user.type(input, "Mentorat");
     await user.tab();
     expect(input).toHaveValue("  Mentorat");
+  });
+
+  it("adds a Resource with the visible submit button beside the draft", async () => {
+    const user = userEvent.setup(); render(<Harness />);
+    await user.click(screen.getAllByRole("button", { name: "Adaugă resursă" })[0]);
+    const submit = screen.getByRole("button", { name: "Adaugă resursa gratis" });
+    expect(submit).toBeDisabled();
+    await user.type(screen.getByLabelText("Descrie resursa gratis"), "Mentorat");
+    expect(submit).toBeEnabled();
+    await user.click(submit);
+    expect(screen.getByRole("button", { name: "Mentorat" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Adaugă resursa gratis" })).not.toBeInTheDocument();
+  });
+
+  it("keeps restored Resource IDs unique when adding after an editor remount", async () => {
+    const user = userEvent.setup(); render(<RemountHarness />);
+    await user.click(screen.getAllByRole("button", { name: "Adaugă resursă" })[0]);
+    await user.type(screen.getByLabelText("Descrie resursa gratis"), "Prima");
+    await user.click(screen.getByRole("button", { name: "Adaugă resursa gratis" }));
+    await user.click(screen.getByRole("button", { name: "Remount editor" }));
+    await user.click(screen.getAllByRole("button", { name: "Adaugă resursă" })[0]);
+    await user.type(screen.getByLabelText("Descrie resursa gratis"), "A doua");
+    await user.click(screen.getByRole("button", { name: "Adaugă resursa gratis" }));
+
+    const ids = screen.getByTestId("resource-ids").textContent?.split(",") ?? [];
+    expect(new Set(ids).size).toBe(2);
+    await user.click(screen.getByRole("button", { name: "Elimină A doua" }));
+    expect(screen.getByRole("button", { name: "Prima" })).toBeInTheDocument();
   });
 
   it("adds with Enter, cancels with Escape, and rejects cross-category duplicates in place", async () => {

@@ -85,6 +85,10 @@ function ResourceInput({ value, onChange, ...props }: TextareaHTMLAttributes<HTM
   );
 }
 
+function EnterIcon() {
+  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 4v7a4 4 0 0 1-4 4H4m0 0 5-5m-5 5 5 5" /></svg>;
+}
+
 function ResourceContainer({
   classification,
   children,
@@ -242,7 +246,11 @@ export function ResourceEditor({
       setErrorFor(`add-${classification}`);
       return;
     }
-    onChange([...resources, { id: `${idPrefix}-${nextId.current++}`, description: value, classification }]);
+    let id: string;
+    do {
+      id = `${idPrefix}-${nextId.current++}`;
+    } while (resources.some((resource) => resource.id === id));
+    onChange([...resources, { id, description: value, classification }]);
     setDrafts((current) => ({ ...current, [classification]: "" }));
     setErrorFor(null);
     setAdding(null);
@@ -406,8 +414,16 @@ export function ResourceEditor({
                       onChange={(event) => { setDrafts((current) => ({ ...current, [classification]: event.target.value })); setErrorFor(null); }}
                       onKeyDown={(event) => handleInputKeyDown(event, () => commitAdd(classification), () => { setAdding(null); setErrorFor(null); })}
                     />
-                    <button type="button" aria-label="Anulează adăugarea" onClick={() => { setAdding(null); setErrorFor(null); }}
-                      className="grid size-11 shrink-0 place-items-center rounded-lg border border-zinc-600 text-xl text-zinc-300 hover:border-zinc-400 hover:text-white">×</button>
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <button type="button" aria-label="Anulează adăugarea" onClick={() => { setAdding(null); setErrorFor(null); }}
+                        className="grid size-11 place-items-center rounded-lg border border-zinc-600 text-xl text-zinc-300 hover:border-zinc-400 hover:text-white">×</button>
+                      <button type="button" aria-label={`Adaugă resursa ${classification === "free" ? "gratis" : "contra cost"}`}
+                        disabled={!normalized(drafts[classification] ?? "")}
+                        onClick={() => commitAdd(classification)}
+                        className="grid size-11 place-items-center rounded-lg bg-action text-action-foreground hover:bg-action-hover active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40">
+                        <EnterIcon />
+                      </button>
+                    </div>
                   </div>
                   <div className="mt-1 flex justify-between gap-2 text-xs">
                     <span className="text-red-400" role="alert">{errorFor === `add-${classification}` ? "Această resursă a fost deja adăugată." : ""}</span>
