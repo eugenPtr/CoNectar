@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ProfileAvatar } from "@/components/profile-avatar";
 import { type MemberProfile, type SocialKey } from "@/lib/profile/get";
+import { NatalChartRetry } from "@/components/natal-chart-retry";
 
 // One presentational Profile, rendering both /profile and /profile/{memberId}.
-// `isOwn` only adds the owner marker (and the future edit affordance); it never
-// changes the data shown (issue #17).
+// The profile loader applies birth-data visibility through RLS before rendering.
+// `isOwn` adds owner controls and chart generation status.
 const SOCIAL_LABELS: Record<SocialKey, string> = {
   phone: "Telefon",
   email: "Email de contact",
@@ -96,6 +97,25 @@ export function ProfileView({
             {profile.passions}
           </p>
         </div>
+        {profile.birth && <div>
+          <h2 className="text-sm font-semibold text-zinc-300">Datele nașterii</h2>
+          <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 rounded-lg border border-zinc-700 px-3 py-2 text-sm text-white">
+            <span><span className="text-zinc-400">Data: </span>{new Intl.DateTimeFormat("ro-RO", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${profile.birth.birthDate}T12:00:00Z`))}</span>
+            <span><span className="text-zinc-400">Ora: </span>{profile.birth.birthTime}</span>
+            <span><span className="text-zinc-400">Locul: </span>{profile.birth.birthplace}</span>
+          </div>
+          {isOwn && !profile.birth.isVisible && <p className="mt-2 text-xs text-zinc-400">Aceste date sunt vizibile doar pentru tine.</p>}
+          {profile.birth.chartUrl && <div className="mt-4 overflow-hidden rounded-lg border border-zinc-700 bg-white p-2">
+            {/* The SVG is displayed as an image; its markup is never inserted into the page. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={profile.birth.chartUrl} alt="Harta natală" className="h-auto w-full" />
+          </div>}
+          {isOwn && profile.birth.chartStatus === "pending" && <p className="mt-3 text-sm text-zinc-300">Harta natală se generează. Revino pe profil în câteva momente.</p>}
+          {isOwn && profile.birth.chartStatus === "failed" && <>
+            <p className="mt-3 text-sm text-zinc-300">Harta natală nu a putut fi generată.</p>
+            <NatalChartRetry />
+          </>}
+        </div>}
         <div>
           <h2 className="text-sm font-semibold text-zinc-300">Proiecte de Suflet</h2>
           {profile.heartProjects.length ? <ol className="mt-2 space-y-2">{profile.heartProjects.map((project) => <li key={project.id} className="rounded-lg border border-zinc-700 px-3 py-2 text-sm text-white"><h3 className="font-semibold">{project.title}</h3><p className="mt-1 whitespace-pre-line">{project.description}</p></li>)}</ol>

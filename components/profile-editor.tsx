@@ -11,6 +11,8 @@ import { HeartProjectEditor } from "@/components/heart-project-editor";
 import type { MemberProfile } from "@/lib/profile/get";
 import { saveProfileAction } from "@/app/profile/edit/actions";
 import type { HeartProjectInput } from "@/lib/heart-projects/save";
+import { BirthDataFields } from "@/components/birth-data-fields";
+import { emptyBirthData, validBirthData, type BirthDataDraft } from "@/lib/birth-data";
 
 const fieldClass = (invalid: boolean) => `rounded border bg-zinc-950 px-3 py-2 outline-none focus:ring-2 focus:ring-white ${invalid ? "border-red-600" : "border-zinc-600"}`;
 
@@ -23,6 +25,9 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
     communityIds: (initial.communities ?? []).map((item) => item.id), phone: initial.socials.phone ?? "",
     contactEmail: initial.socials.email ?? "", website: initial.socials.website ?? "", linkedin: initial.socials.linkedin ?? "",
     facebook: initial.socials.facebook ?? "", instagram: initial.socials.instagram ?? "", x: initial.socials.x ?? "",
+    birth: initial.birth ? { birthDate: initial.birth.birthDate, birthTime: initial.birth.birthTime,
+      birthplace: initial.birth.birthplace, latitude: initial.birth.latitude, longitude: initial.birth.longitude,
+      timezone: initial.birth.timezone, isVisible: initial.birth.isVisible } as BirthDataDraft : null as BirthDataDraft | null,
   }), [initial]);
   const [values, setValues] = useState(initialValues);
   const [photo, setPhoto] = useState<File | null>(null);
@@ -32,7 +37,8 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
   const dirty = JSON.stringify(values) !== JSON.stringify(initialValues) || Boolean(photo) || projectDraftPending;
   const valid = Boolean(values.firstName.trim() && values.lastName.trim() && values.location.trim() && values.passions.trim() &&
     !projectDraftPending && (values.heartProjectSeeking || values.heartProjects.length > 0) && values.heartProjects.length <= 10 && values.resources.length && values.communityIds.length &&
-    values.phone && isPossiblePhoneNumber(values.phone) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail.trim()));
+    values.phone && isPossiblePhoneNumber(values.phone) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail.trim())
+    && (!values.birth || validBirthData(values.birth)));
   useEffect(() => {
     if (!dirty) return;
     const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -56,7 +62,8 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
     const entries = { first_name: values.firstName, last_name: values.lastName, location: values.location, passions: values.passions,
       heart_project_seeking: String(values.heartProjectSeeking), heart_projects: JSON.stringify(values.heartProjectSeeking ? [] : values.heartProjects),
       resources: JSON.stringify(values.resources), community_ids: JSON.stringify(values.communityIds), phone: values.phone,
-      contact_email: values.contactEmail, website: values.website, linkedin: values.linkedin, facebook: values.facebook, instagram: values.instagram, x: values.x };
+      contact_email: values.contactEmail, website: values.website, linkedin: values.linkedin, facebook: values.facebook, instagram: values.instagram, x: values.x,
+      birth_data: JSON.stringify(values.birth) };
     Object.entries(entries).forEach(([key, value]) => data.set(key, value)); if (photo) data.set("profile_photo", photo);
     startTransition(async () => { const result = await saveProfileAction(data); if (result?.kind === "unauthorized") router.push("/sign-in");
       else if (result?.kind === "invalidPhoto") toast.error("Fișierul selectat nu este o imagine validă.");
@@ -81,6 +88,13 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
         {!values.heartProjectSeeking && <HeartProjectEditor projects={values.heartProjects} onChange={(projects) => update("heartProjects", projects)} onPendingChange={setProjectDraftPending} />}
       </section>
       <fieldset aria-invalid={!values.resources.length} className={!values.resources.length ? "rounded-lg border border-red-600 p-3" : ""}><legend className="mb-4 font-semibold">Resurse</legend><ResourceEditor resources={values.resources} onChange={(resources) => update("resources", resources)} /></fieldset>
+      <section className="space-y-4"><h2 className="font-semibold">Datele nașterii</h2>
+        <p className="text-sm text-zinc-300">Completează toate câmpurile pentru harta natală. Generarea se face după salvare.</p>
+        <BirthDataFields idPrefix="profile-birth" value={values.birth ?? emptyBirthData}
+          onChange={(birth) => update("birth", birth)} />
+        {values.birth && <button type="button" onClick={() => update("birth", null)}
+          className="min-h-11 rounded-lg border border-red-400/70 px-3 py-2 text-sm text-red-200 hover:border-red-300">Elimină datele nașterii</button>}
+      </section>
       <section className="space-y-4"><h2 className="font-semibold">Contact</h2>
         <label className="flex flex-col gap-1.5 text-sm">Telefon<input value={values.phone} onChange={(e) => update("phone", e.target.value)} aria-invalid={!values.phone || !isPossiblePhoneNumber(values.phone)} className={fieldClass(!values.phone || !isPossiblePhoneNumber(values.phone))} /></label>
         <label className="flex flex-col gap-1.5 text-sm">Email de contact<input type="email" value={values.contactEmail} onChange={(e) => update("contactEmail", e.target.value)} aria-invalid={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail)} className={fieldClass(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail))} /></label>

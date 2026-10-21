@@ -3,6 +3,7 @@ import type { Embedder } from "@/lib/people-search/embed-member";
 import { buildProfileContextEmbeddingInput } from "@/lib/people-search/embedding-input";
 import { normalizeResources, type ResourceInput } from "@/lib/resources/model";
 import { heartProjectEmbeddingInput, normalizeHeartProjects, type HeartProjectInput, type IndexedHeartProject } from "@/lib/heart-projects/save";
+import type { BirthDataInput } from "@/lib/birth-data";
 
 export type SubmitOnboardingResult =
   | { kind: "ok" }
@@ -32,6 +33,7 @@ interface OnboardingPayload {
   location: string; passions: string; heartProjectSeeking: boolean;
   heartProjectDescription?: string; heartProjects?: HeartProjectInput[]; resources: ResourceInput[]; socials?: SocialsInput;
   communityIds?: string[]; profilePhotoPath?: string;
+  birthData?: BirthDataInput | null;
 }
 
 export interface OnboardingDbClient {

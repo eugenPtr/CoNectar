@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -48,6 +53,59 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      birth_details: {
+        Row: {
+          birth_date: string
+          birth_time: string
+          birthplace: string
+          chart_generation: string
+          chart_path: string | null
+          chart_status: string
+          is_visible: boolean
+          latitude: number
+          longitude: number
+          member_id: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          birth_date: string
+          birth_time: string
+          birthplace: string
+          chart_generation?: string
+          chart_path?: string | null
+          chart_status?: string
+          is_visible?: boolean
+          latitude: number
+          longitude: number
+          member_id: string
+          timezone: string
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string
+          birth_time?: string
+          birthplace?: string
+          chart_generation?: string
+          chart_path?: string | null
+          chart_status?: string
+          is_visible?: boolean
+          latitude?: number
+          longitude?: number
+          member_id?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "birth_details_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: true
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -491,6 +549,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_legacy_heart_projects: { Args: never; Returns: number }
       claim_invite: {
         Args: { p_code: string; p_email: string; p_user_id: string }
         Returns: string
@@ -523,9 +582,44 @@ export type Database = {
             }
             Returns: string
           }
+        | {
+            Args: {
+              p_birth: Json
+              p_code: string
+              p_community_ids: string[]
+              p_email: string
+              p_is_universal: boolean
+              p_profile: Json
+              p_projects: Json
+              p_resources: Json
+              p_socials: Json
+              p_user_id: string
+            }
+            Returns: string
+          }
+      configure_natal_chart_webhook: {
+        Args: { p_project_url: string; p_secret: string }
+        Returns: undefined
+      }
       delete_expired_conversations: { Args: never; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
       is_member: { Args: never; Returns: boolean }
+      match_heart_projects: {
+        Args: {
+          match_count: number
+          min_similarity: number
+          query_embedding: string
+        }
+        Returns: {
+          description: string
+          first_name: string
+          last_name: string
+          member_id: string
+          project_id: string
+          similarity: number
+          title: string
+        }[]
+      }
       match_profile_contexts: {
         Args: {
           match_count: number
@@ -572,6 +666,7 @@ export type Database = {
         Returns: undefined
       }
       replace_own_resources: { Args: { p_resources: Json }; Returns: undefined }
+      retry_own_natal_chart: { Args: never; Returns: undefined }
       update_own_profile:
         | {
             Args: {
@@ -584,6 +679,17 @@ export type Database = {
           }
         | {
             Args: {
+              p_community_ids: string[]
+              p_profile: Json
+              p_projects: Json
+              p_resources: Json
+              p_socials: Json
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_birth: Json
               p_community_ids: string[]
               p_profile: Json
               p_projects: Json
@@ -611,12 +717,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -640,11 +746,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -665,11 +771,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -690,11 +796,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -707,11 +813,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Resource } from "@/lib/resources/model";
 import type { HeartProject } from "@/lib/heart-projects/save";
+import type { BirthDataInput } from "@/lib/birth-data";
+
+export interface BirthProfile extends BirthDataInput {
+  chartStatus: "pending" | "ready" | "failed";
+  chartUrl: string | null;
+}
 
 // The Social Links a Profile can publish, in display order. The same order the
 // Profile page renders them in; a link absent from the map was never published
@@ -32,6 +38,7 @@ export interface MemberProfile {
   socials: Partial<Record<SocialKey, string>>;
   resources: Resource[];
   heartProjects: HeartProject[];
+  birth?: BirthProfile | null;
 }
 
 interface ProfileRow {
@@ -68,6 +75,10 @@ export interface GetProfileClient {
     data: Array<{ id: string; name: string }> | null;
     error: { message: string } | null;
   }>;
+  fetchBirthDetails?(memberId: string): PromiseLike<{
+    data: BirthProfile | null;
+    error: { message: string } | null;
+  }>;
 }
 
 // A Member's full published Profile, or null when no Member has that id (a
@@ -94,6 +105,9 @@ export async function getProfile(
   const { data: communities, error: communitiesError } = client.fetchCommunities
     ? await client.fetchCommunities(memberId) : { data: [], error: null };
   if (communitiesError) throw new Error(`getProfile communities failed: ${communitiesError.message}`);
+  const { data: birth, error: birthError } = client.fetchBirthDetails
+    ? await client.fetchBirthDetails(memberId) : { data: null, error: null };
+  if (birthError) throw new Error(`getProfile birth details failed: ${birthError.message}`);
 
   const socials: Partial<Record<SocialKey, string>> = {};
   if (socialsRow) {
@@ -103,7 +117,7 @@ export async function getProfile(
     }
   }
 
-  return { ...profile, socials, resources: resources ?? [], heartProjects: heartProjects ?? [], communities: communities ?? [] };
+  return { ...profile, socials, resources: resources ?? [], heartProjects: heartProjects ?? [], communities: communities ?? [], birth };
 }
 
 // Production adapter over the cookie-bound server client (ADR-0006 RLS).
@@ -175,6 +189,19 @@ export function supabaseGetProfileClient(
         }).sort((a, b) => a.name.localeCompare(b.name, "ro")) ?? null,
         error: error ? { message: error.message } : null,
       };
+    },
+    async fetchBirthDetails(memberId) {
+      const { data, error } = await supabase.from("birth_details")
+        .select("birth_date, birth_time, birthplace, latitude, longitude, timezone, is_visible, chart_status, chart_path")
+        .eq("member_id", memberId).maybeSingle();
+      if (error || !data) return { data: null, error: error ? { message: error.message } : null };
+      return { data: {
+        birthDate: data.birth_date, birthTime: data.birth_time.slice(0, 5),
+        birthplace: data.birthplace, latitude: data.latitude, longitude: data.longitude,
+        timezone: data.timezone, isVisible: data.is_visible,
+        chartStatus: data.chart_status as BirthProfile["chartStatus"],
+        chartUrl: data.chart_status === "ready" && data.chart_path ? `/api/natal-chart/${memberId}` : null,
+      }, error: null };
     },
   };
 }

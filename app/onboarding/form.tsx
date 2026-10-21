@@ -15,6 +15,8 @@ import { ResourceEditor, type EditableResource } from "@/components/resource-edi
 import { ProfilePhotoPicker } from "@/components/profile-photo-picker";
 import { HeartProjectEditor } from "@/components/heart-project-editor";
 import type { HeartProjectInput } from "@/lib/heart-projects/save";
+import { BirthDataFields } from "@/components/birth-data-fields";
+import { emptyBirthData, validBirthData, type BirthDataDraft } from "@/lib/birth-data";
 
 type OnboardingFormProps = {
   invite: string;
@@ -57,7 +59,7 @@ export default function OnboardingForm({
   const formRef = useRef<HTMLFormElement>(null);
   const draftKey = `onboarding-draft:${memberId}:${invite}`;
   const [started, setStarted] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [values, setValues] = useState({
     firstName: "",
     lastName: "",
@@ -74,6 +76,7 @@ export default function OnboardingForm({
     instagram: "",
     x: "",
     communityIds: (communities.length === 1 && communities[0].id === "test-community" ? [communities[0].id] : []) as string[],
+    birth: null as BirthDataDraft | null,
   });
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -94,7 +97,9 @@ export default function OnboardingForm({
           )
         : step === 3
           ? values.resources.length > 0
-          : Boolean(
+          : step === 4
+            ? Boolean(values.birth && validBirthData(values.birth))
+            : Boolean(
               values.phone &&
                 isPossiblePhoneNumber(values.phone) &&
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contactEmail.trim()),
@@ -110,12 +115,12 @@ export default function OnboardingForm({
           const draft = JSON.parse(serialized) as {
             version?: number;
             expiresAt?: number;
-            step?: 1 | 2 | 3 | 4;
+            step?: 1 | 2 | 3 | 4 | 5;
             values?: typeof values;
             phoneCountry?: Country;
           };
           if (
-            draft.version !== 4 ||
+            (draft.version !== 4 && draft.version !== 5) ||
             !draft.expiresAt ||
             draft.expiresAt <= Date.now() ||
             !draft.values
@@ -123,7 +128,7 @@ export default function OnboardingForm({
             localStorage.removeItem(draftKey);
           } else {
             const legacy = draft.values as typeof values & { heartProjectDescription?: string };
-            setValues({ ...draft.values, heartProjects: legacy.heartProjects ?? (legacy.heartProjectDescription?.trim() ? [{ title: "Soul project", description: legacy.heartProjectDescription }] : []) });
+            setValues({ ...draft.values, birth: draft.version === 4 ? null : draft.values.birth ?? null, heartProjects: legacy.heartProjects ?? (legacy.heartProjectDescription?.trim() ? [{ title: "Soul project", description: legacy.heartProjectDescription }] : []) });
             setPhoneCountry(draft.phoneCountry ?? "RO");
             const identityComplete = [
               draft.values.firstName,
@@ -138,9 +143,11 @@ export default function OnboardingForm({
             setStep(
               !identityComplete
                 ? 1
-                : draft.step === 4 && profileComplete && draft.values.resources?.length > 0
-                  ? 4
-                  : (Math.min(3, draft.step ?? 1) as 1 | 2 | 3),
+                : draft.step === 4 && draft.version === 4 && profileComplete && draft.values.resources?.length > 0
+                  ? 5
+                  : draft.step === 5 && profileComplete && draft.values.resources?.length > 0
+                    ? 5
+                    : (Math.min(4, draft.step ?? 1) as 1 | 2 | 3 | 4),
             );
           }
         }
@@ -160,7 +167,7 @@ export default function OnboardingForm({
     localStorage.setItem(
       draftKey,
       JSON.stringify({
-        version: 4,
+        version: 5,
         expiresAt: Date.now() + DRAFT_TTL_MS,
         step,
         values,
@@ -181,7 +188,7 @@ export default function OnboardingForm({
     setPhoto(file); setPhotoPreview(URL.createObjectURL(file));
   }
 
-  function update(field: Exclude<keyof typeof values, "resources" | "heartProjects" | "communityIds">, value: string) {
+  function update(field: Exclude<keyof typeof values, "resources" | "heartProjects" | "communityIds" | "birth">, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
     setInvalid((current) => current.filter((name) => name !== field));
   }
@@ -198,14 +205,14 @@ export default function OnboardingForm({
             ...(values.heartProject === true && (!values.heartProjects.length || projectDraftPending)
               ? ["heartProjects"]
               : []),
-          ] : values.resources.length === 0
-              ? ["resources"] : [];
+          ] : step === 3 ? (values.resources.length === 0 ? ["resources"] : [])
+            : step === 4 && (!values.birth || !validBirthData(values.birth)) ? ["birth"] : [];
     setInvalid(missing);
     if (missing.length > 0) {
       requestAnimationFrame(() => formRef.current?.reportValidity());
       return;
     }
-    setStep((current) => Math.min(4, current + 1) as 1 | 2 | 3 | 4);
+    setStep((current) => Math.min(5, current + 1) as 1 | 2 | 3 | 4 | 5);
   }
 
   async function finalize() {
@@ -251,6 +258,7 @@ export default function OnboardingForm({
       instagram: values.instagram,
       x: values.x,
       community_ids: JSON.stringify(values.communityIds),
+      birth_data: JSON.stringify(values.birth),
     };
     Object.entries(entries).forEach(([name, value]) => formData.set(name, value));
     if (photo) formData.set("profile_photo", photo);
@@ -288,9 +296,10 @@ export default function OnboardingForm({
               ? ["contactEmail"]
               : []),
           ];
-          const missing = [...identityMissing, ...profileMissing, ...resourceMissing, ...contactMissing];
+          const birthMissing = values.birth && !validBirthData(values.birth) ? ["birth"] : [];
+          const missing = [...identityMissing, ...profileMissing, ...resourceMissing, ...birthMissing, ...contactMissing];
           setInvalid(missing);
-          setStep(identityMissing.length ? 1 : profileMissing.length ? 2 : resourceMissing.length ? 3 : 4);
+          setStep(identityMissing.length ? 1 : profileMissing.length ? 2 : resourceMissing.length ? 3 : birthMissing.length ? 4 : 5);
           toast.error("Unele informații obligatorii lipsesc. Verifică datele evidențiate.");
           return;
         }
@@ -369,7 +378,7 @@ export default function OnboardingForm({
             aria-label="Înapoi"
             onClick={() => {
               setInvalid([]);
-              setStep((current) => Math.max(1, current - 1) as 1 | 2 | 3 | 4);
+              setStep((current) => Math.max(1, current - 1) as 1 | 2 | 3 | 4 | 5);
             }}
             className="inline-flex items-center gap-1.5 justify-self-start rounded-md py-1 pr-2 text-sm font-medium text-zinc-300 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
@@ -381,10 +390,10 @@ export default function OnboardingForm({
         ) : null}
         <div aria-label="Progres înregistrare" className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
-            Pasul {step}/4
+            Pasul {step}/5
           </p>
-          <div className="grid grid-cols-4 gap-2" aria-hidden="true">
-            {[1, 2, 3, 4].map((segment) => (
+          <div className="grid grid-cols-5 gap-2" aria-hidden="true">
+            {[1, 2, 3, 4, 5].map((segment) => (
               <span
                 key={segment}
                 data-testid="progress-segment"
@@ -401,7 +410,7 @@ export default function OnboardingForm({
             ? "Despre tine"
             : step === 2
               ? "Pasiuni și Proiect de Suflet"
-              : step === 3 ? "Ce resurse poți oferi comunității?" : "Contact"}
+              : step === 3 ? "Ce resurse poți oferi comunității?" : step === 4 ? "Datele nașterii" : "Contact"}
         </h2>
 
         {step === 1 ? <>
@@ -538,7 +547,13 @@ export default function OnboardingForm({
           </>
         ) : null}
 
-        {step === 4 ? (
+        {step === 4 ? <>
+          <p className="text-sm leading-6 text-zinc-300">Acest pas este opțional. Completează toate câmpurile pentru a crea harta natală sau sari peste el.</p>
+          <BirthDataFields idPrefix="onboarding-birth" value={values.birth ?? emptyBirthData}
+            onChange={(birth) => { setValues((current) => ({ ...current, birth })); setInvalid((current) => current.filter((name) => name !== "birth")); }} />
+        </> : null}
+
+        {step === 5 ? (
           <>
             <p className="text-sm leading-6 text-zinc-300">
               Telefonul și emailul de contact sunt obligatorii și vor fi vizibile membrilor
@@ -612,7 +627,7 @@ export default function OnboardingForm({
         ) : null}
 
         <div className="flex gap-3">
-          {step < 4 ? (
+          {step < 5 ? (
             <button
               type="button"
               disabled={!stepComplete}
@@ -631,6 +646,8 @@ export default function OnboardingForm({
               {submitting ? "Se finalizează…" : "Finalizează înregistrarea"}
             </button>
           )}
+          {step === 4 && <button type="button" disabled={submitting} onClick={() => { setValues((current) => ({ ...current, birth: null })); setInvalid((current) => current.filter((name) => name !== "birth")); setStep(5); }}
+            className="min-h-11 rounded-[10px] border border-zinc-500 px-4 py-2.5 text-sm font-semibold text-white hover:border-white">Sari peste</button>}
         </div>
       </form>
       {submitting && <div role="status" aria-live="polite" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"><div className="rounded-xl bg-zinc-900 p-6 text-center text-white"><span aria-hidden="true" className="mx-auto mb-3 block size-8 animate-spin rounded-full border-4 border-white border-r-transparent" />Se salvează proiectele și se actualizează harta…</div></div>}

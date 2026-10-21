@@ -9,6 +9,7 @@ import { validateProfilePhoto } from "@/lib/profile/photo";
 import { supabaseInviteValidateClient, validateInvite } from "@/lib/invites/validate";
 import { isUniversalInviteCode, universalInviteConfig } from "@/lib/invites/universal";
 import type { HeartProjectInput } from "@/lib/heart-projects/save";
+import { birthDataForRpc, parseBirthData } from "@/lib/birth-data";
 
 export type SubmitOnboardingActionResult =
   | { kind: "ok" }
@@ -36,6 +37,10 @@ export async function submitOnboardingAction(
   if (!data.user?.email) redirect("/sign-in");
 
   const code = String(formData.get("invite") ?? "").trim();
+  let birthData;
+  try { birthData = parseBirthData(JSON.parse(String(formData.get("birth_data") ?? "null"))); }
+  catch { return { kind: "missingFields" }; }
+  if (birthData === undefined) return { kind: "missingFields" };
   const service = await createSupabaseServiceClient();
   const config = universalInviteConfig();
   const isUniversal = isUniversalInviteCode(code, config);
@@ -87,6 +92,7 @@ export async function submitOnboardingAction(
               })),
               p_projects: payload.projects.map((project) => ({ ...project, embedding: JSON.stringify(project.embedding), embedding_input: project.embeddingInput })),
               p_community_ids: payload.communityIds,
+              p_birth: payload.birthData ? birthDataForRpc(payload.birthData) : null,
             });
             return { error: error ? { code: error.code, message: error.message } : null };
           },
@@ -113,6 +119,7 @@ export async function submitOnboardingAction(
         ),
         communityIds: JSON.parse(String(formData.get("community_ids") ?? "[]")) as string[],
         profilePhotoPath,
+        birthData,
       },
     );
 

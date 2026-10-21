@@ -46,6 +46,7 @@ describe("OnboardingForm", () => {
     await reachResources(user);
     await addFreeResource(user);
     await user.click(screen.getByRole("button", { name: "Înainte" }));
+    await user.click(screen.getByRole("button", { name: "Sari peste" }));
     await user.type(screen.getByLabelText("Telefon (obligatoriu)"), "721234567");
     await user.type(screen.getByLabelText("Email de contact (obligatoriu)"), "contact@example.com");
   }
@@ -55,12 +56,12 @@ describe("OnboardingForm", () => {
     render(<OnboardingForm invite="DEV" memberId="m1" loginEmail="ana@example.com" />);
     expect(screen.getByRole("heading", { name: "Intră în rețea" })).toBeInTheDocument();
     expect(screen.getByText("Spune-ne despre tine, ca membrii să te poată găsi.")).toBeInTheDocument();
-    expect(screen.queryByText("Pasul 1/4")).not.toBeInTheDocument();
+    expect(screen.queryByText("Pasul 1/5")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Începe" })).toHaveClass("bg-action");
     await user.click(screen.getByRole("button", { name: "Începe" }));
     expect(screen.queryByRole("heading", { name: "Intră în rețea" })).not.toBeInTheDocument();
-    expect(screen.getByText("Pasul 1/4")).toBeInTheDocument();
-    expect(screen.getAllByTestId("progress-segment")).toHaveLength(4);
+    expect(screen.getByText("Pasul 1/5")).toBeInTheDocument();
+    expect(screen.getAllByTestId("progress-segment")).toHaveLength(5);
     expect(screen.getByLabelText("Localitate (obligatoriu)")).not.toHaveAttribute("placeholder");
     expect(screen.getByRole("button", { name: "Înainte" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Înainte" })).toHaveClass("bg-action");
@@ -113,6 +114,9 @@ describe("OnboardingForm", () => {
     await user.click(screen.getAllByRole("button", { name: "Adaugă resursă" })[1]);
     await user.type(screen.getByLabelText("Descrie resursa contra cost"), "Audit software{Enter}");
     await user.click(screen.getByRole("button", { name: "Înainte" }));
+    expect(screen.getByRole("heading", { name: "Datele nașterii" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Înainte" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Sari peste" }));
     expect(screen.getByLabelText("Email de contact (obligatoriu)")).toHaveValue("");
     await user.type(screen.getByLabelText("Telefon (obligatoriu)"), "721234567");
     await user.type(screen.getByLabelText("Email de contact (obligatoriu)"), "contact@example.com");
@@ -133,7 +137,7 @@ describe("OnboardingForm", () => {
     cleanup();
     render(<OnboardingForm invite="DEV" memberId="m1" loginEmail="ana@example.com" />);
     await user.click(screen.getByRole("button", { name: "Începe" }));
-    await waitFor(() => expect(screen.getByText("Pasul 3/4")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Pasul 3/5")).toBeInTheDocument());
     expect(screen.getByRole("button", { name: "Mentorat păstrat" })).toBeInTheDocument();
   });
 
@@ -142,7 +146,7 @@ describe("OnboardingForm", () => {
     localStorage.setItem("onboarding-draft:m1:DEV", JSON.stringify({ version: 2, expiresAt: Date.now() + 10000, step: 3, values: { freeResources: "legacy" } }));
     render(<OnboardingForm invite="DEV" memberId="m1" loginEmail="ana@example.com" />);
     await user.click(screen.getByRole("button", { name: "Începe" }));
-    expect(screen.getByText("Pasul 1/4")).toBeInTheDocument();
+    expect(screen.getByText("Pasul 1/5")).toBeInTheDocument();
   });
 
   it("surfaces an unexpected failure, preserves the draft, and permits retry", async () => {
