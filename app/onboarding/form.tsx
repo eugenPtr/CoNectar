@@ -12,6 +12,7 @@ import { getExampleNumber, isPossiblePhoneNumber } from "libphonenumber-js/max";
 import examples from "libphonenumber-js/mobile/examples";
 import { toast } from "sonner";
 import { ResourceEditor, type EditableResource } from "@/components/resource-editor";
+import { AutoGrowingTextarea } from "@/components/auto-growing-textarea";
 import { ProfilePhotoPicker } from "@/components/profile-photo-picker";
 import { HeartProjectEditor } from "@/components/heart-project-editor";
 import type { HeartProjectInput } from "@/lib/heart-projects/save";
@@ -430,10 +431,11 @@ export default function OnboardingForm({
             <label htmlFor="first_name" className="text-sm font-medium">
               Prenume (obligatoriu)
             </label>
-            <input
+            <AutoGrowingTextarea
               id="first_name"
               name="first_name"
               required
+              singleLine
               value={values.firstName}
               onChange={(event) => update("firstName", event.target.value)}
               aria-invalid={invalid.includes("firstName")}
@@ -444,10 +446,11 @@ export default function OnboardingForm({
             <label htmlFor="last_name" className="text-sm font-medium">
               Nume (obligatoriu)
             </label>
-            <input
+            <AutoGrowingTextarea
               id="last_name"
               name="last_name"
               required
+              singleLine
               value={values.lastName}
               onChange={(event) => update("lastName", event.target.value)}
               aria-invalid={invalid.includes("lastName")}
@@ -460,10 +463,11 @@ export default function OnboardingForm({
           <label htmlFor="location" className="text-sm font-medium">
             Localitate (obligatoriu)
           </label>
-          <input
+          <AutoGrowingTextarea
             id="location"
             name="location"
             required
+            singleLine
             value={values.location}
             onChange={(event) => update("location", event.target.value)}
             aria-invalid={invalid.includes("location")}
@@ -491,10 +495,9 @@ export default function OnboardingForm({
               <label htmlFor="passions" className="text-sm font-medium">
                 Pasiuni (obligatoriu)
               </label>
-              <textarea
+              <AutoGrowingTextarea
                 id="passions"
                 required
-                rows={3}
                 value={values.passions}
                 onChange={(event) => update("passions", event.target.value)}
                 aria-invalid={invalid.includes("passions")}

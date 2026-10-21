@@ -29,6 +29,7 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 import { toast } from "sonner";
+import { AutoGrowingTextarea } from "@/components/auto-growing-textarea";
 import type { ResourceClassification } from "@/lib/resources/model";
 
 export interface EditableResource {
@@ -59,11 +60,6 @@ function normalized(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function grow(event: React.FormEvent<HTMLTextAreaElement>) {
-  event.currentTarget.style.height = "auto";
-  event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
-}
-
 function categoryOf(resources: EditableResource[], id: string): ResourceClassification | null {
   if (id === "container-free") return "free";
   if (id === "container-paid") return "paid";
@@ -79,16 +75,12 @@ function grouped(resources: EditableResource[]) {
 
 function ResourceInput({ value, onChange, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <textarea
+    <AutoGrowingTextarea
       {...props}
-      rows={1}
       maxLength={255}
       value={value}
-      onChange={(event) => {
-        grow(event);
-        onChange?.(event);
-      }}
-      className="min-h-11 w-full resize-none overflow-hidden rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white focus:ring-2 focus:ring-white/20"
+      onChange={onChange}
+      className="rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white focus:ring-2 focus:ring-white/20"
     />
   );
 }

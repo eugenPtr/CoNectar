@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { isPossiblePhoneNumber } from "libphonenumber-js/max";
 import { toast } from "sonner";
 import { BackButton } from "@/components/back-button";
+import { AutoGrowingTextarea } from "@/components/auto-growing-textarea";
 import { ProfilePhotoPicker } from "@/components/profile-photo-picker";
 import { ResourceEditor, type EditableResource } from "@/components/resource-editor";
 import { HeartProjectEditor } from "@/components/heart-project-editor";
@@ -78,12 +79,12 @@ export function ProfileEditor({ initial, communities }: { initial: MemberProfile
     <form onSubmit={(event) => event.preventDefault()} className="mt-7 space-y-7">
       <section className="space-y-4"><h2 className="font-semibold">Despre tine</h2>
         <ProfilePhotoPicker id="profile_photo" name={`${values.firstName} ${values.lastName}`} photoUrl={preview ?? initial.photoUrl} hasPhoto={Boolean(preview ?? initial.photoUrl)} onChange={selectPhoto} />
-        <div className="grid gap-4 sm:grid-cols-2">{([["firstName", "Prenume"], ["lastName", "Nume"]] as const).map(([key, label]) => <label key={key} className="flex flex-col gap-1.5 text-sm">{label}<input value={values[key]} onChange={(e) => update(key, e.target.value)} aria-invalid={textInvalid(values[key])} className={fieldClass(textInvalid(values[key]))} /></label>)}</div>
-        <label className="flex flex-col gap-1.5 text-sm">Localitate<input value={values.location} onChange={(e) => update("location", e.target.value)} aria-invalid={textInvalid(values.location)} className={fieldClass(textInvalid(values.location))} /></label>
+        <div className="grid gap-4 sm:grid-cols-2">{([["firstName", "Prenume"], ["lastName", "Nume"]] as const).map(([key, label]) => <label key={key} className="flex flex-col gap-1.5 text-sm">{label}<AutoGrowingTextarea singleLine value={values[key]} onChange={(e) => update(key, e.target.value)} aria-invalid={textInvalid(values[key])} className={fieldClass(textInvalid(values[key]))} /></label>)}</div>
+        <label className="flex flex-col gap-1.5 text-sm">Localitate<AutoGrowingTextarea singleLine value={values.location} onChange={(e) => update("location", e.target.value)} aria-invalid={textInvalid(values.location)} className={fieldClass(textInvalid(values.location))} /></label>
         <fieldset aria-invalid={!values.communityIds.length} className={`rounded-lg border p-4 ${values.communityIds.length ? "border-zinc-700" : "border-red-600"}`}><legend className="px-1 text-sm">Comunități afiliate</legend>{communities.map((community) => <label key={community.id} className="mt-2 flex gap-3 text-sm"><input type="checkbox" checked={values.communityIds.includes(community.id)} onChange={(e) => update("communityIds", e.target.checked ? [...values.communityIds, community.id] : values.communityIds.filter((id) => id !== community.id))} />{community.name}</label>)}</fieldset>
       </section>
       <section className="space-y-4"><h2 className="font-semibold">Pasiuni și Proiecte de Suflet</h2>
-        <label className="flex flex-col gap-1.5 text-sm">Pasiuni<textarea rows={3} value={values.passions} onChange={(e) => update("passions", e.target.value)} aria-invalid={textInvalid(values.passions)} className={fieldClass(textInvalid(values.passions))} /></label>
+        <label className="flex flex-col gap-1.5 text-sm">Pasiuni<AutoGrowingTextarea value={values.passions} onChange={(e) => update("passions", e.target.value)} aria-invalid={textInvalid(values.passions)} className={fieldClass(textInvalid(values.passions))} /></label>
         <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={values.heartProjectSeeking} onChange={(e) => { update("heartProjectSeeking", e.target.checked); if (e.target.checked) setProjectDraftPending(false); }} />Încă îmi caut Proiectul de Suflet</label>
         {!values.heartProjectSeeking && <HeartProjectEditor projects={values.heartProjects} onChange={(projects) => update("heartProjects", projects)} onPendingChange={setProjectDraftPending} />}
       </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AutoGrowingTextarea } from "@/components/auto-growing-textarea";
 import type { HeartProjectInput } from "@/lib/heart-projects/save";
 
 export function HeartProjectEditor({ projects, onChange, onPendingChange }: { projects: HeartProjectInput[]; onChange: (projects: HeartProjectInput[]) => void; onPendingChange?: (pending: boolean) => void }) {
@@ -40,8 +41,8 @@ export function HeartProjectEditor({ projects, onChange, onPendingChange }: { pr
     {removed && <button type="button" onClick={() => { onChange([...projects.slice(0, removed.index), removed.project, ...projects.slice(removed.index)]); setRemoved(null); }} className="min-h-11 rounded border px-3 text-sm">Anulează eliminarea</button>}
     <div className="space-y-3 rounded-lg border border-zinc-700 p-3">
       <h3 className="font-semibold">{editing === null ? "Adaugă Proiect de Suflet" : "Editează Proiectul de Suflet"}</h3>
-      <label className="flex flex-col gap-1 text-sm">Titlu proiect<input value={title} maxLength={120} aria-invalid={Boolean(description.trim() && !title.trim())} onChange={(event) => setTitle(event.target.value)} className={`rounded border bg-zinc-950 px-3 py-2 ${description.trim() && !title.trim() ? "border-red-600" : "border-zinc-600"}`} /></label>
-      <label className="flex flex-col gap-1 text-sm">Descriere proiect<textarea value={description} maxLength={2000} rows={4} aria-invalid={Boolean(title.trim() && !description.trim())} onChange={(event) => setDescription(event.target.value)} className={`rounded border bg-zinc-950 px-3 py-2 ${title.trim() && !description.trim() ? "border-red-600" : "border-zinc-600"}`} /></label>
+      <label className="flex flex-col gap-1 text-sm">Titlu proiect<AutoGrowingTextarea singleLine value={title} maxLength={120} aria-invalid={Boolean(description.trim() && !title.trim())} onChange={(event) => setTitle(event.target.value)} className={`rounded border bg-zinc-950 px-3 py-2 ${description.trim() && !title.trim() ? "border-red-600" : "border-zinc-600"}`} /></label>
+      <label className="flex flex-col gap-1 text-sm">Descriere proiect<AutoGrowingTextarea value={description} maxLength={2000} aria-invalid={Boolean(title.trim() && !description.trim())} onChange={(event) => setDescription(event.target.value)} className={`rounded border bg-zinc-950 px-3 py-2 ${title.trim() && !description.trim() ? "border-red-600" : "border-zinc-600"}`} /></label>
       <div className="flex gap-2">
         <button type="button" disabled={invalid || (editing === null && projects.length >= 10)} onClick={commit} className="min-h-11 rounded bg-action px-4 text-action-foreground disabled:opacity-40">{editing === null ? "Adaugă proiect" : "Salvează proiectul"}</button>
         {editing !== null && <button type="button" onClick={() => { setEditing(null); setTitle(""); setDescription(""); }} className="min-h-11 rounded border px-3">Renunță</button>}
