@@ -8,9 +8,25 @@ import { supabaseConversationsClient } from "@/lib/people-search/conversations";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import "./globals.css";
 
+const description = "O comunitate pentru oameni care participă la cercuri de bărbați și de femei și vor să se conecteze prin resursele pe care le oferă.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.conectar.website"),
   title: "CoNectar",
-  description: "O comunitate pentru oameni care participă la cercuri de bărbați și de femei și vor să se conecteze prin resursele pe care le oferă.",
+  description,
+  openGraph: {
+    title: "CoNectar",
+    description,
+    type: "website",
+    locale: "ro_RO",
+    images: [{ url: "/conectar-social.png", width: 1024, height: 1024, alt: "CoNectar" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "CoNectar",
+    description,
+    images: ["/conectar-social.png"],
+  },
 };
 
 export default async function RootLayout({
